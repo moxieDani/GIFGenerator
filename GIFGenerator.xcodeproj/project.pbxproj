@@ -9,21 +9,23 @@
 /* Begin PBXBuildFile section */
 		5176A97129C16B960049AAC1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5176A97029C16B960049AAC1 /* AppDelegate.swift */; };
 		5176A97329C16B960049AAC1 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5176A97229C16B960049AAC1 /* SceneDelegate.swift */; };
-		5176A97529C16B960049AAC1 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5176A97429C16B960049AAC1 /* ViewController.swift */; };
+		5176A97529C16B960049AAC1 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5176A97429C16B960049AAC1 /* MainViewController.swift */; };
 		5176A97829C16B960049AAC1 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5176A97629C16B960049AAC1 /* Main.storyboard */; };
 		5176A97A29C16B9A0049AAC1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5176A97929C16B9A0049AAC1 /* Assets.xcassets */; };
 		5176A97D29C16B9A0049AAC1 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5176A97B29C16B9A0049AAC1 /* LaunchScreen.storyboard */; };
+		5176A98729C1729A0049AAC1 /* VideoTrimViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5176A98629C172990049AAC1 /* VideoTrimViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		5176A96D29C16B960049AAC1 /* GIFGenerator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GIFGenerator.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5176A97029C16B960049AAC1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		5176A97229C16B960049AAC1 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		5176A97429C16B960049AAC1 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		5176A97429C16B960049AAC1 /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
 		5176A97729C16B960049AAC1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		5176A97929C16B9A0049AAC1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		5176A97C29C16B9A0049AAC1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		5176A97E29C16B9A0049AAC1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		5176A98629C172990049AAC1 /* VideoTrimViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoTrimViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,7 +60,8 @@
 			children = (
 				5176A97029C16B960049AAC1 /* AppDelegate.swift */,
 				5176A97229C16B960049AAC1 /* SceneDelegate.swift */,
-				5176A97429C16B960049AAC1 /* ViewController.swift */,
+				5176A97429C16B960049AAC1 /* MainViewController.swift */,
+				5176A98629C172990049AAC1 /* VideoTrimViewController.swift */,
 				5176A97629C16B960049AAC1 /* Main.storyboard */,
 				5176A97929C16B9A0049AAC1 /* Assets.xcassets */,
 				5176A97B29C16B9A0049AAC1 /* LaunchScreen.storyboard */,
@@ -138,8 +141,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5176A97529C16B960049AAC1 /* ViewController.swift in Sources */,
+				5176A97529C16B960049AAC1 /* MainViewController.swift in Sources */,
 				5176A97129C16B960049AAC1 /* AppDelegate.swift in Sources */,
+				5176A98729C1729A0049AAC1 /* VideoTrimViewController.swift in Sources */,
 				5176A97329C16B960049AAC1 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
