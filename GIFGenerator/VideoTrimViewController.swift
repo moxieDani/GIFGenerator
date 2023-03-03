@@ -7,6 +7,7 @@
 
 import UIKit
 import AVKit
+import PhotosUI
 
 extension CMTime {
     var displayString: String {
@@ -38,7 +39,7 @@ extension AVAsset {
     }
 }
 
-class VideoTrimViewController: UIViewController {
+class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate {
 
     let playerController = AVPlayerViewController()
     var trimmer: VideoTrimmer!
@@ -100,6 +101,17 @@ class VideoTrimViewController: UIViewController {
     @objc private func dismissSelf() {
         dismiss(animated: true, completion: nil)
     }
+    
+    @objc private func showVideoPickerView() {
+        var config = PHPickerConfiguration()
+        config.selectionLimit = 1
+        config.preferredAssetRepresentationMode = .current
+        config.filter = .videos
+        
+        let pickerViewController = PHPickerViewController(configuration: config)
+        pickerViewController.delegate = self
+        self.present(pickerViewController, animated: true, completion: nil)
+    }
 
     // MARK: - Private
     private func updateLabels() {
@@ -115,6 +127,10 @@ class VideoTrimViewController: UIViewController {
             player.replaceCurrentItem(with: AVPlayerItem(asset: trimmedAsset))
         }
     }
+
+    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+        picker.dismiss(animated: true, completion: nil)
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -122,7 +138,7 @@ class VideoTrimViewController: UIViewController {
         
         self.title = "Trim Video"
         self.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(dismissSelf))
-        self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Next", style: .plain, target: self, action: nil)
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Pick", style: .plain, target: self, action: #selector(showVideoPickerView))
 
         // AVPlayer & Asset settings.
         asset = AVURLAsset(url: Bundle.main.resourceURL!.appendingPathComponent("SampleVideo.mp4"), options: [AVURLAssetPreferPreciseDurationAndTimingKey: true])
