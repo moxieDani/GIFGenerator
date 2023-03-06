@@ -14,7 +14,7 @@ class MainViewController: UIViewController {
     
     @objc func showVideoPickerView()
     {
-        let rootVC = VideoTrimViewController()
+        let rootVC = VideoTrimViewController(.videos)
         let navVC = UINavigationController(rootViewController: rootVC)
         self.present(navVC, animated:true)
     }

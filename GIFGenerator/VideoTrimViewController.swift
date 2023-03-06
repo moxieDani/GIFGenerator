@@ -51,6 +51,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
     private var wasPlaying = false
     private var player: AVPlayer! {playerController.player}
     private var asset: AVAsset!
+    private var filter: PHPickerFilter!
 
     // MARK: - Input
     @objc private func didBeginTrimming(_ sender: VideoTrimmer) {
@@ -130,6 +131,16 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
 
     func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
         picker.dismiss(animated: true, completion: nil)
+    }
+    
+    // MARK: - override
+    init(_ filter: PHPickerFilter) {
+        self.filter = filter
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     override func viewDidLoad() {
