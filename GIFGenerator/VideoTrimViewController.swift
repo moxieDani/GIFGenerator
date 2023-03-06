@@ -131,6 +131,19 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
 
     func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
         picker.dismiss(animated: true, completion: nil)
+        
+        guard let provider = results.first?.itemProvider else { return }
+        if self.filter == .videos {
+            provider.loadFileRepresentation(forTypeIdentifier: UTType.movie.identifier) { (videoURL, error) in
+                provider.loadItem(forTypeIdentifier: UTType.movie.identifier, options: [:]) { (videoURL, error) in
+                    DispatchQueue.main.async {
+                        if let url = videoURL as? URL {
+                            print(url)
+                        }
+                    }
+                }
+            }
+        }
     }
     
     // MARK: - override
