@@ -128,44 +128,10 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
             player.replaceCurrentItem(with: AVPlayerItem(asset: trimmedAsset))
         }
     }
-
-    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
-        picker.dismiss(animated: true, completion: nil)
-        
-        guard let provider = results.first?.itemProvider else { return }
-        if self.filter == .videos {
-            provider.loadFileRepresentation(forTypeIdentifier: UTType.movie.identifier) { (videoURL, error) in
-                provider.loadItem(forTypeIdentifier: UTType.movie.identifier, options: [:]) { (videoURL, error) in
-                    DispatchQueue.main.async {
-                        if let url = videoURL as? URL {
-                            print(url)
-                        }
-                    }
-                }
-            }
-        }
-    }
     
-    // MARK: - override
-    init(_ filter: PHPickerFilter) {
-        self.filter = filter
-        super.init(nibName: nil, bundle: nil)
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        view.backgroundColor = .systemGroupedBackground
-        
-        self.title = "Trim Video"
-        self.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(dismissSelf))
-        self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Pick", style: .plain, target: self, action: #selector(showVideoPickerView))
-
+    private func showPlayerController(_ url: URL) {
         // AVPlayer & Asset settings.
-        asset = AVURLAsset(url: Bundle.main.resourceURL!.appendingPathComponent("SampleVideo.mp4"), options: [AVURLAssetPreferPreciseDurationAndTimingKey: true])
+        asset = AVURLAsset(url: url, options: [AVURLAssetPreferPreciseDurationAndTimingKey: true])
 
         playerController.player = AVPlayer()
         addChild(playerController)
@@ -177,7 +143,14 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
             playerController.view.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             playerController.view.heightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.widthAnchor, multiplier: 1080 / 1920)
         ])
-
+    }
+    
+    private func updatePlayerController(_ url: URL) {
+        asset = AVURLAsset(url: url, options: [AVURLAssetPreferPreciseDurationAndTimingKey: true])
+        playerController.player = AVPlayer(url: url)
+    }
+    
+    private func showTrimmerController() {
         // THIS IS WHERE WE SETUP THE VIDEOTRIMMER:
         trimmer = VideoTrimmer()
         trimmer.minimumDuration = CMTime(seconds: 1, preferredTimescale: 600)
@@ -234,8 +207,63 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         }
 
         updateLabels()
+    }
+    
+    private func updateTrimmerController() {
+        trimmer.asset = asset
+        updatePlayerAsset()
+
+        player.addPeriodicTimeObserver(forInterval: CMTime(value: 1, timescale: 30), queue: .main) { [weak self] time in
+            guard let self = self else {return}
+            // when we're not trimming, the players starting point is actual later than the trimmer,
+            // (because the vidoe has been trimmed), so we need to account for that.
+            // When we're trimming, we always show the full video
+            let finalTime = self.trimmer.trimmingState == .none ? CMTimeAdd(time, self.trimmer.selectedRange.start) : time
+            self.trimmer.progress = finalTime
+        }
+
+        updateLabels()
+    }
+
+    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+        picker.dismiss(animated: true, completion: nil)
+        
+        guard let provider = results.first?.itemProvider else { return }
+        if self.filter == .videos {
+            provider.loadFileRepresentation(forTypeIdentifier: UTType.movie.identifier) { (videoURL, error) in
+                provider.loadItem(forTypeIdentifier: UTType.movie.identifier, options: [:]) { (videoURL, error) in
+                    DispatchQueue.main.async {
+                        if let url = videoURL as? URL {
+                            print(url)
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - override
+    init(_ filter: PHPickerFilter) {
+        self.filter = filter
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .systemGroupedBackground
+        
+        self.title = "Trim Video"
+        self.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(dismissSelf))
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Pick", style: .plain, target: self, action: #selector(showVideoPickerView))
 
         showVideoPickerView()
+
+        self.showPlayerController(URL(fileURLWithPath: ""))
+        self.showTrimmerController()
     }
     
 
