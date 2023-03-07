@@ -234,7 +234,8 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         }
 
         updateLabels()
-        
+
+        showVideoPickerView()
     }
     
 
