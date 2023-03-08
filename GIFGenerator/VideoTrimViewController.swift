@@ -234,7 +234,8 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
                 provider.loadItem(forTypeIdentifier: UTType.movie.identifier, options: [:]) { (videoURL, error) in
                     DispatchQueue.main.async {
                         if let url = videoURL as? URL {
-                            print(url)
+                            self.updatePlayerController(url)
+                            self.updateTrimmerController()
                         }
                     }
                 }
