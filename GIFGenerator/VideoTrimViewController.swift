@@ -107,7 +107,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         var config = PHPickerConfiguration()
         config.selectionLimit = 1
         config.preferredAssetRepresentationMode = .current
-        config.filter = .videos
+        config.filter = self.filter
         
         let pickerViewController = PHPickerViewController(configuration: config)
         pickerViewController.delegate = self
@@ -234,10 +234,45 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
                 provider.loadItem(forTypeIdentifier: UTType.movie.identifier, options: [:]) { (videoURL, error) in
                     DispatchQueue.main.async {
                         if let url = videoURL as? URL {
-                            print(url)
+                            self.updatePlayerController(url)
+                            self.updateTrimmerController()
                         }
                     }
                 }
+            }
+        }
+        
+        if self.filter == .livePhotos {
+            if provider.canLoadObject(ofClass: PHLivePhoto.self) {
+                provider.loadObject(ofClass: PHLivePhoto.self, completionHandler: { (livePhoto, error) in
+                    if let livePhoto = livePhoto as? PHLivePhoto {
+                        let resources = PHAssetResource.assetResources(for: livePhoto)
+                        for resource in resources {
+                            if resource.type == .pairedVideo {
+                                let documentsDirectoryURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+                                let destinationURL = documentsDirectoryURL.appendingPathComponent("temp-live-photo-video.mov")
+                                
+                                do {
+                                    if FileManager.default.fileExists(atPath: destinationURL.path) {
+                                        try FileManager.default.removeItem(atPath: destinationURL.path)
+                                    }
+                                } catch {
+                                    print(error.localizedDescription)
+                                }
+
+                                let options = PHAssetResourceRequestOptions()
+                                PHAssetResourceManager.default().writeData(for: resource, toFile: destinationURL, options: options) { (error) in
+                                    if error == nil {
+                                        DispatchQueue.main.async {
+                                            self.updatePlayerController(destinationURL)
+                                            self.updateTrimmerController()
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                })
             }
         }
     }

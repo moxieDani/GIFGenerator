@@ -18,6 +18,13 @@ class MainViewController: UIViewController {
         let navVC = UINavigationController(rootViewController: rootVC)
         self.present(navVC, animated:true)
     }
+    
+    @objc func showLivePhotoPickerView()
+    {
+        let rootVC = VideoTrimViewController(.livePhotos)
+        let navVC = UINavigationController(rootViewController: rootVC)
+        self.present(navVC, animated:true)
+    }
         
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -34,7 +41,7 @@ class MainViewController: UIViewController {
         livePhotoToGifButton.backgroundColor = .darkGray
         livePhotoToGifButton.setTitleColor(.lightGray, for: .normal)
         livePhotoToGifButton.frame = CGRect(x: 20, y: videoToGifButton.frame.maxY+20, width: 330, height: 52)
-        livePhotoToGifButton.addTarget(self, action: #selector(showVideoPickerView), for: .touchUpInside)
+        livePhotoToGifButton.addTarget(self, action: #selector(showLivePhotoPickerView), for: .touchUpInside)
         self.view.addSubview(self.livePhotoToGifButton)
     }
 
