@@ -115,6 +115,12 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         pickerViewController.delegate = self
         self.present(pickerViewController, animated: true, completion: nil)
     }
+    
+    @objc private func showFrameEditorViewController() {
+        let rootVC = FrameEditorViewController()
+        let navVC = UINavigationController(rootViewController: rootVC)
+        self.present(navVC, animated:true)
+    }
 
     // MARK: - Private
     private func updateLabels() {
@@ -314,6 +320,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         self.frameEditorButton.setTitle("Create Image Frames", for: .normal)
         self.frameEditorButton.backgroundColor = .gray
         self.frameEditorButton.frame = CGRect(x: 20, y: 400, width: 330, height: 52)
+        self.frameEditorButton.addTarget(self, action: #selector(showFrameEditorViewController), for: .touchUpInside)
         self.view.addSubview(self.frameEditorButton)
     }
     

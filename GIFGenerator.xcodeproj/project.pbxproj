@@ -16,6 +16,7 @@
 		5176A98729C1729A0049AAC1 /* VideoTrimViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5176A98629C172990049AAC1 /* VideoTrimViewController.swift */; };
 		5176A98A29C1E0920049AAC1 /* VideoTrimmer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5176A98829C1E0920049AAC1 /* VideoTrimmer.swift */; };
 		5176A98B29C1E0920049AAC1 /* VideoTrimmerThumb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5176A98929C1E0920049AAC1 /* VideoTrimmerThumb.swift */; };
+		5176A98E29C401990049AAC1 /* FrameEditorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5176A98D29C401990049AAC1 /* FrameEditorViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +31,7 @@
 		5176A98629C172990049AAC1 /* VideoTrimViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoTrimViewController.swift; sourceTree = "<group>"; };
 		5176A98829C1E0920049AAC1 /* VideoTrimmer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoTrimmer.swift; sourceTree = "<group>"; };
 		5176A98929C1E0920049AAC1 /* VideoTrimmerThumb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoTrimmerThumb.swift; sourceTree = "<group>"; };
+		5176A98D29C401990049AAC1 /* FrameEditorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameEditorViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,6 +69,7 @@
 				5176A97429C16B960049AAC1 /* MainViewController.swift */,
 				5176A98C29C1E32B0049AAC1 /* VideoTrimmerUI */,
 				5176A98629C172990049AAC1 /* VideoTrimViewController.swift */,
+				5176A98D29C401990049AAC1 /* FrameEditorViewController.swift */,
 				5176A97629C16B960049AAC1 /* Main.storyboard */,
 				5176A97929C16B9A0049AAC1 /* Assets.xcassets */,
 				5176A97B29C16B9A0049AAC1 /* LaunchScreen.storyboard */,
@@ -158,6 +161,7 @@
 				5176A98A29C1E0920049AAC1 /* VideoTrimmer.swift in Sources */,
 				5176A97529C16B960049AAC1 /* MainViewController.swift in Sources */,
 				5176A97129C16B960049AAC1 /* AppDelegate.swift in Sources */,
+				5176A98E29C401990049AAC1 /* FrameEditorViewController.swift in Sources */,
 				5176A98B29C1E0920049AAC1 /* VideoTrimmerThumb.swift in Sources */,
 				5176A98729C1729A0049AAC1 /* VideoTrimViewController.swift in Sources */,
 				5176A97329C16B960049AAC1 /* SceneDelegate.swift in Sources */,
