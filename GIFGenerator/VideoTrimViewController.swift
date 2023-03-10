@@ -52,6 +52,8 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
     private var player: AVPlayer! {playerController.player}
     private var asset: AVAsset!
     private var filter: PHPickerFilter!
+    
+    private let frameEditorButton = UIButton()
 
     // MARK: - Input
     @objc private func didBeginTrimming(_ sender: VideoTrimmer) {
@@ -112,6 +114,12 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         let pickerViewController = PHPickerViewController(configuration: config)
         pickerViewController.delegate = self
         self.present(pickerViewController, animated: true, completion: nil)
+    }
+    
+    @objc private func showFrameEditorViewController() {
+        let rootVC = FrameEditorViewController()
+        let navVC = UINavigationController(rootViewController: rootVC)
+        self.present(navVC, animated:true)
     }
 
     // MARK: - Private
@@ -224,56 +232,65 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
 
         updateLabels()
     }
+    
+    private func showNormalVideoFromPHPicker(_ provider: NSItemProvider) {
+        provider.loadFileRepresentation(forTypeIdentifier: UTType.movie.identifier) { (videoURL, error) in
+            provider.loadItem(forTypeIdentifier: UTType.movie.identifier, options: [:]) { (videoURL, error) in
+                DispatchQueue.main.async {
+                    if let url = videoURL as? URL {
+                        self.updatePlayerController(url)
+                        self.updateTrimmerController()
+                    }
+                }
+            }
+        }
+    }
+    
+    private func showLivePhotoVideoFromPHPicker(_ provider: NSItemProvider) {
+        if provider.canLoadObject(ofClass: PHLivePhoto.self) {
+            provider.loadObject(ofClass: PHLivePhoto.self, completionHandler: { (livePhoto, error) in
+                // Get PHLivePhoto object and get PHAssetResource.
+                if let livePhoto = livePhoto as? PHLivePhoto {
+                    let resources = PHAssetResource.assetResources(for: livePhoto)
+                    for resource in resources {
+                        if resource.type == .pairedVideo {
+                            // Set destination path to copy the video of live photo
+                            let documentsDirectoryURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+                            let destinationURL = documentsDirectoryURL.appendingPathComponent("temp-live-photo-video.mov")
+                            
+                            do {
+                                if FileManager.default.fileExists(atPath: destinationURL.path) {
+                                    try FileManager.default.removeItem(atPath: destinationURL.path)
+                                }
+                            } catch {
+                                print(error.localizedDescription)
+                            }
+
+                            // Copy the video of live photo to destination path.
+                            let options = PHAssetResourceRequestOptions()
+                            PHAssetResourceManager.default().writeData(for: resource, toFile: destinationURL, options: options) { (error) in
+                                if error == nil {
+                                    DispatchQueue.main.async {
+                                        self.updatePlayerController(destinationURL)
+                                        self.updateTrimmerController()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            })
+        }
+    }
 
     func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
         picker.dismiss(animated: true, completion: nil)
         
         guard let provider = results.first?.itemProvider else { return }
         if self.filter == .videos {
-            provider.loadFileRepresentation(forTypeIdentifier: UTType.movie.identifier) { (videoURL, error) in
-                provider.loadItem(forTypeIdentifier: UTType.movie.identifier, options: [:]) { (videoURL, error) in
-                    DispatchQueue.main.async {
-                        if let url = videoURL as? URL {
-                            self.updatePlayerController(url)
-                            self.updateTrimmerController()
-                        }
-                    }
-                }
-            }
-        }
-        
-        if self.filter == .livePhotos {
-            if provider.canLoadObject(ofClass: PHLivePhoto.self) {
-                provider.loadObject(ofClass: PHLivePhoto.self, completionHandler: { (livePhoto, error) in
-                    if let livePhoto = livePhoto as? PHLivePhoto {
-                        let resources = PHAssetResource.assetResources(for: livePhoto)
-                        for resource in resources {
-                            if resource.type == .pairedVideo {
-                                let documentsDirectoryURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-                                let destinationURL = documentsDirectoryURL.appendingPathComponent("temp-live-photo-video.mov")
-                                
-                                do {
-                                    if FileManager.default.fileExists(atPath: destinationURL.path) {
-                                        try FileManager.default.removeItem(atPath: destinationURL.path)
-                                    }
-                                } catch {
-                                    print(error.localizedDescription)
-                                }
-
-                                let options = PHAssetResourceRequestOptions()
-                                PHAssetResourceManager.default().writeData(for: resource, toFile: destinationURL, options: options) { (error) in
-                                    if error == nil {
-                                        DispatchQueue.main.async {
-                                            self.updatePlayerController(destinationURL)
-                                            self.updateTrimmerController()
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                })
-            }
+            self.showNormalVideoFromPHPicker(provider)
+        } else if self.filter == .livePhotos {
+            self.showLivePhotoVideoFromPHPicker(provider)
         }
     }
     
@@ -295,10 +312,16 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         self.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(dismissSelf))
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Pick", style: .plain, target: self, action: #selector(showVideoPickerView))
 
-        showVideoPickerView()
-
         self.showPlayerController(URL(fileURLWithPath: ""))
         self.showTrimmerController()
+        
+        self.showVideoPickerView()
+        
+        self.frameEditorButton.setTitle("Create Image Frames", for: .normal)
+        self.frameEditorButton.backgroundColor = .gray
+        self.frameEditorButton.frame = CGRect(x: 20, y: 400, width: 330, height: 52)
+        self.frameEditorButton.addTarget(self, action: #selector(showFrameEditorViewController), for: .touchUpInside)
+        self.view.addSubview(self.frameEditorButton)
     }
     
 
