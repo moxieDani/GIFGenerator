@@ -52,6 +52,8 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
     private var player: AVPlayer! {playerController.player}
     private var asset: AVAsset!
     private var filter: PHPickerFilter!
+    
+    private let frameEditorButton = UIButton()
 
     // MARK: - Input
     @objc private func didBeginTrimming(_ sender: VideoTrimmer) {
@@ -308,6 +310,11 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         self.showTrimmerController()
         
         self.showVideoPickerView()
+        
+        self.frameEditorButton.setTitle("Create Image Frames", for: .normal)
+        self.frameEditorButton.backgroundColor = .gray
+        self.frameEditorButton.frame = CGRect(x: 20, y: 400, width: 330, height: 52)
+        self.view.addSubview(self.frameEditorButton)
     }
     
 
