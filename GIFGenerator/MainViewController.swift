@@ -16,6 +16,8 @@ class MainViewController: UIViewController {
     {
         let rootVC = VideoTrimViewController(.videos)
         let navVC = UINavigationController(rootViewController: rootVC)
+        navVC.modalPresentationStyle = .fullScreen
+        navVC.modalTransitionStyle = .crossDissolve
         self.present(navVC, animated:true)
     }
     
@@ -23,6 +25,8 @@ class MainViewController: UIViewController {
     {
         let rootVC = VideoTrimViewController(.livePhotos)
         let navVC = UINavigationController(rootViewController: rootVC)
+        navVC.modalPresentationStyle = .fullScreen
+        navVC.modalTransitionStyle = .crossDissolve
         self.present(navVC, animated:true)
     }
         
