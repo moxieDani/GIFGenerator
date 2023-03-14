@@ -234,6 +234,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
     }
     
     private func showNormalVideoFromPHPicker(_ provider: NSItemProvider) {
+        LoadingIndicator.showLoading()
         provider.loadFileRepresentation(forTypeIdentifier: UTType.movie.identifier) { (videoURL, error) in
             provider.loadItem(forTypeIdentifier: UTType.movie.identifier, options: [:]) { (videoURL, error) in
                 DispatchQueue.main.async {
@@ -241,12 +242,14 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
                         self.updatePlayerController(url)
                         self.updateTrimmerController()
                     }
+                    LoadingIndicator.hideLoading()
                 }
             }
         }
     }
     
     private func showLivePhotoVideoFromPHPicker(_ provider: NSItemProvider) {
+        LoadingIndicator.showLoading()
         if provider.canLoadObject(ofClass: PHLivePhoto.self) {
             provider.loadObject(ofClass: PHLivePhoto.self, completionHandler: { (livePhoto, error) in
                 // Get PHLivePhoto object and get PHAssetResource.
@@ -273,6 +276,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
                                     DispatchQueue.main.async {
                                         self.updatePlayerController(destinationURL)
                                         self.updateTrimmerController()
+                                        LoadingIndicator.hideLoading()
                                     }
                                 }
                             }
