@@ -17,6 +17,7 @@
 		5176A98A29C1E0920049AAC1 /* VideoTrimmer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5176A98829C1E0920049AAC1 /* VideoTrimmer.swift */; };
 		5176A98B29C1E0920049AAC1 /* VideoTrimmerThumb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5176A98929C1E0920049AAC1 /* VideoTrimmerThumb.swift */; };
 		5176A98E29C401990049AAC1 /* FrameEditorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5176A98D29C401990049AAC1 /* FrameEditorViewController.swift */; };
+		5176A99029C43ABA0049AAC1 /* LoadingIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5176A98F29C43ABA0049AAC1 /* LoadingIndicator.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +33,7 @@
 		5176A98829C1E0920049AAC1 /* VideoTrimmer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoTrimmer.swift; sourceTree = "<group>"; };
 		5176A98929C1E0920049AAC1 /* VideoTrimmerThumb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoTrimmerThumb.swift; sourceTree = "<group>"; };
 		5176A98D29C401990049AAC1 /* FrameEditorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameEditorViewController.swift; sourceTree = "<group>"; };
+		5176A98F29C43ABA0049AAC1 /* LoadingIndicator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LoadingIndicator.swift; path = GIFGenerator/LoadingIndicator.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -48,6 +50,7 @@
 		5176A96429C16B960049AAC1 = {
 			isa = PBXGroup;
 			children = (
+				5176A98C29C1E32B0049AAC1 /* 3rdParty */,
 				5176A96F29C16B960049AAC1 /* GIFGenerator */,
 				5176A96E29C16B960049AAC1 /* Products */,
 			);
@@ -67,7 +70,6 @@
 				5176A97029C16B960049AAC1 /* AppDelegate.swift */,
 				5176A97229C16B960049AAC1 /* SceneDelegate.swift */,
 				5176A97429C16B960049AAC1 /* MainViewController.swift */,
-				5176A98C29C1E32B0049AAC1 /* VideoTrimmerUI */,
 				5176A98629C172990049AAC1 /* VideoTrimViewController.swift */,
 				5176A98D29C401990049AAC1 /* FrameEditorViewController.swift */,
 				5176A97629C16B960049AAC1 /* Main.storyboard */,
@@ -78,13 +80,14 @@
 			path = GIFGenerator;
 			sourceTree = "<group>";
 		};
-		5176A98C29C1E32B0049AAC1 /* VideoTrimmerUI */ = {
+		5176A98C29C1E32B0049AAC1 /* 3rdParty */ = {
 			isa = PBXGroup;
 			children = (
 				5176A98829C1E0920049AAC1 /* VideoTrimmer.swift */,
 				5176A98929C1E0920049AAC1 /* VideoTrimmerThumb.swift */,
+				5176A98F29C43ABA0049AAC1 /* LoadingIndicator.swift */,
 			);
-			path = VideoTrimmerUI;
+			path = 3rdParty;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -162,6 +165,7 @@
 				5176A97529C16B960049AAC1 /* MainViewController.swift in Sources */,
 				5176A97129C16B960049AAC1 /* AppDelegate.swift in Sources */,
 				5176A98E29C401990049AAC1 /* FrameEditorViewController.swift in Sources */,
+				5176A99029C43ABA0049AAC1 /* LoadingIndicator.swift in Sources */,
 				5176A98B29C1E0920049AAC1 /* VideoTrimmerThumb.swift in Sources */,
 				5176A98729C1729A0049AAC1 /* VideoTrimViewController.swift in Sources */,
 				5176A97329C16B960049AAC1 /* SceneDelegate.swift in Sources */,
