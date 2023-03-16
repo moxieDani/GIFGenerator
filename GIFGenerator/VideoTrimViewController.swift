@@ -323,7 +323,10 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         
         self.frameEditorButton.setTitle("Create Image Frames", for: .normal)
         self.frameEditorButton.backgroundColor = .gray
-        self.frameEditorButton.frame = CGRect(x: 20, y: 400, width: 330, height: 52)
+        self.frameEditorButton.frame = CGRect(x: self.view.safeAreaInsets.left,
+                                       y: view.frame.height - 100,
+                                   width: self.view.frame.width,
+                                  height: 100)
         self.frameEditorButton.addTarget(self, action: #selector(showFrameEditorViewController), for: .touchUpInside)
         self.view.addSubview(self.frameEditorButton)
     }
