@@ -233,6 +233,11 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         updateLabels()
     }
     
+    private func updateframeEditorButton() {
+        self.frameEditorButton.backgroundColor = .systemBlue
+        self.frameEditorButton.isEnabled = true
+    }
+    
     private func showNormalVideoFromPHPicker(_ provider: NSItemProvider) {
         LoadingIndicator.showLoading()
         provider.loadFileRepresentation(forTypeIdentifier: UTType.movie.identifier) { (videoURL, error) in
@@ -241,6 +246,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
                     if let url = videoURL as? URL {
                         self.updatePlayerController(url)
                         self.updateTrimmerController()
+                        self.updateframeEditorButton()
                     }
                     LoadingIndicator.hideLoading()
                 }
@@ -276,6 +282,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
                                     DispatchQueue.main.async {
                                         self.updatePlayerController(destinationURL)
                                         self.updateTrimmerController()
+                                        self.updateframeEditorButton()
                                         LoadingIndicator.hideLoading()
                                     }
                                 }
@@ -327,6 +334,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
                                        y: view.frame.height - 100,
                                    width: self.view.frame.width,
                                   height: 100)
+        self.frameEditorButton.isEnabled = false
         self.frameEditorButton.addTarget(self, action: #selector(showFrameEditorViewController), for: .touchUpInside)
         self.view.addSubview(self.frameEditorButton)
     }
