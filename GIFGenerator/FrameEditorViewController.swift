@@ -12,9 +12,12 @@ class FrameEditorViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        view.backgroundColor = .systemGroupedBackground
         self.title = "Edit Frame"
-        self.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: nil)
+        self.view.backgroundColor = .systemGray
+        
+        self.navigationController?.navigationBar.tintColor = .systemYellow
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.down.fill"), style: .plain, target: self, action: nil)
+        self.navigationItem.rightBarButtonItem?.tintColor = .red
     }
     
 

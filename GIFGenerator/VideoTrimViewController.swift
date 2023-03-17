@@ -118,8 +118,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
     
     @objc private func showFrameEditorViewController() {
         let rootVC = FrameEditorViewController()
-        let navVC = UINavigationController(rootViewController: rootVC)
-        self.present(navVC, animated:true)
+        self.navigationController?.pushViewController(rootVC, animated: true)
     }
 
     // MARK: - Private
@@ -233,20 +232,30 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         updateLabels()
     }
     
+    private func updateframeEditorButton() {
+        self.frameEditorButton.backgroundColor = .systemYellow
+        self.frameEditorButton.setTitleColor(.black, for: .normal)
+        self.frameEditorButton.isEnabled = true
+    }
+    
     private func showNormalVideoFromPHPicker(_ provider: NSItemProvider) {
+        LoadingIndicator.showLoading()
         provider.loadFileRepresentation(forTypeIdentifier: UTType.movie.identifier) { (videoURL, error) in
             provider.loadItem(forTypeIdentifier: UTType.movie.identifier, options: [:]) { (videoURL, error) in
                 DispatchQueue.main.async {
                     if let url = videoURL as? URL {
                         self.updatePlayerController(url)
                         self.updateTrimmerController()
+                        self.updateframeEditorButton()
                     }
+                    LoadingIndicator.hideLoading()
                 }
             }
         }
     }
     
     private func showLivePhotoVideoFromPHPicker(_ provider: NSItemProvider) {
+        LoadingIndicator.showLoading()
         if provider.canLoadObject(ofClass: PHLivePhoto.self) {
             provider.loadObject(ofClass: PHLivePhoto.self, completionHandler: { (livePhoto, error) in
                 // Get PHLivePhoto object and get PHAssetResource.
@@ -273,6 +282,8 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
                                     DispatchQueue.main.async {
                                         self.updatePlayerController(destinationURL)
                                         self.updateTrimmerController()
+                                        self.updateframeEditorButton()
+                                        LoadingIndicator.hideLoading()
                                     }
                                 }
                             }
@@ -306,20 +317,25 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemGroupedBackground
-        
+        self.view.backgroundColor = .systemGray
         self.title = "Trim Video"
         self.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(dismissSelf))
-        self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Pick", style: .plain, target: self, action: #selector(showVideoPickerView))
-
+        self.navigationItem.leftBarButtonItem?.tintColor = .systemYellow
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "film.fill"), style: .plain, target: self, action: #selector(showVideoPickerView))
+        self.navigationItem.rightBarButtonItem?.tintColor = .systemYellow
         self.showPlayerController(URL(fileURLWithPath: ""))
         self.showTrimmerController()
         
         self.showVideoPickerView()
         
         self.frameEditorButton.setTitle("Create Image Frames", for: .normal)
-        self.frameEditorButton.backgroundColor = .gray
-        self.frameEditorButton.frame = CGRect(x: 20, y: 400, width: 330, height: 52)
+        self.frameEditorButton.setTitleColor(.darkGray, for: .normal)
+        self.frameEditorButton.backgroundColor = .lightGray
+        self.frameEditorButton.frame = CGRect(x: self.view.safeAreaInsets.left,
+                                       y: view.frame.height - 100,
+                                   width: self.view.frame.width,
+                                  height: 100)
+        self.frameEditorButton.isEnabled = false
         self.frameEditorButton.addTarget(self, action: #selector(showFrameEditorViewController), for: .touchUpInside)
         self.view.addSubview(self.frameEditorButton)
     }
