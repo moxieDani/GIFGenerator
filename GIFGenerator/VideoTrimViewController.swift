@@ -118,8 +118,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
     
     @objc private func showFrameEditorViewController() {
         let rootVC = FrameEditorViewController()
-        let navVC = UINavigationController(rootViewController: rootVC)
-        self.present(navVC, animated:true)
+        self.navigationController?.pushViewController(rootVC, animated: true)
     }
 
     // MARK: - Private
@@ -234,7 +233,8 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
     }
     
     private func updateframeEditorButton() {
-        self.frameEditorButton.backgroundColor = .systemBlue
+        self.frameEditorButton.backgroundColor = .systemYellow
+        self.frameEditorButton.setTitleColor(.black, for: .normal)
         self.frameEditorButton.isEnabled = true
     }
     
@@ -317,19 +317,20 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemGroupedBackground
-        
+        self.view.backgroundColor = .systemGray
         self.title = "Trim Video"
         self.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(dismissSelf))
-        self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "camera.fill"), style: .plain, target: self, action: #selector(showVideoPickerView))
-
+        self.navigationItem.leftBarButtonItem?.tintColor = .systemYellow
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "film.fill"), style: .plain, target: self, action: #selector(showVideoPickerView))
+        self.navigationItem.rightBarButtonItem?.tintColor = .systemYellow
         self.showPlayerController(URL(fileURLWithPath: ""))
         self.showTrimmerController()
         
         self.showVideoPickerView()
         
         self.frameEditorButton.setTitle("Create Image Frames", for: .normal)
-        self.frameEditorButton.backgroundColor = .gray
+        self.frameEditorButton.setTitleColor(.darkGray, for: .normal)
+        self.frameEditorButton.backgroundColor = .lightGray
         self.frameEditorButton.frame = CGRect(x: self.view.safeAreaInsets.left,
                                        y: view.frame.height - 100,
                                    width: self.view.frame.width,
