@@ -321,7 +321,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         
         self.title = "Trim Video"
         self.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(dismissSelf))
-        self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Pick", style: .plain, target: self, action: #selector(showVideoPickerView))
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "camera.fill"), style: .plain, target: self, action: #selector(showVideoPickerView))
 
         self.showPlayerController(URL(fileURLWithPath: ""))
         self.showTrimmerController()
