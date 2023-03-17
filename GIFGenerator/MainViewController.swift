@@ -32,7 +32,7 @@ class MainViewController: UIViewController {
         
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.view.backgroundColor = .white
+        view.backgroundColor = .systemGray
         
         self.videoToGifButton.setTitle("Video -> GIF", for: .normal)
         self.videoToGifButton.backgroundColor = .orange
