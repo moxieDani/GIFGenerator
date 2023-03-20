@@ -117,8 +117,17 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
     }
     
     @objc private func showFrameEditorViewController() {
-        let rootVC = FrameEditorViewController()
-        self.navigationController?.pushViewController(rootVC, animated: true)
+        var uIImageFrame = [UIImage]()
+        let thumbnailMaker = DDThumbnailMaker(self.asset)
+        thumbnailMaker.intervalFrame = 10
+        thumbnailMaker.generate(
+            imageHandler:{requestedTime, image, actualTime, result, error in
+                uIImageFrame.append(UIImage(cgImage: image!))
+            },
+            completion: {
+                let rootVC = FrameEditorViewController()
+                self.navigationController?.pushViewController(rootVC, animated: true)
+        })
     }
 
     // MARK: - Private
