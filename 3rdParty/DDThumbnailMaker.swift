@@ -10,13 +10,13 @@ import UIKit
 import AVKit
 
 public class DDThumbnailMaker {
-    public var avAsset: AVAsset!
+    public var avAsset: AVAsset! = nil
     public var intervalMsec: UInt! = 1000
     public var intervalFrame: UInt! = 0
-    public var thumbnailImageSize: CGSize? = CGSize(width: 192, height: 144)
-    public var videoTracks: [AVAssetTrack]!
-    public var frameRate: Int!
-    public var duration: CMTime!
+    public var thumbnailImageSize: CGSize! = CGSize(width: 192, height: 144)
+    public var videoTracks: [AVAssetTrack]! = nil
+    public var frameRate: Int! = 0
+    public var duration: CMTime! = .zero
     
     private var generator: AVAssetImageGenerator? = nil
 
@@ -41,11 +41,13 @@ public class DDThumbnailMaker {
     
     private func initAssetInternal() async {
         self.videoTracks = try? await self.avAsset.loadTracks(withMediaType: .video)
-        self.frameRate = self.videoTracks.count > 0 ? try! await Int(self.videoTracks.first!.load(.nominalFrameRate)) : 0
-        self.duration = try? await self.avAsset.load(.duration)
-        
-        let size = try! await self.videoTracks.first!.load(.naturalSize).applying(self.videoTracks.first!.load(.preferredTransform))
-        self.thumbnailImageSize = CGSize(width: abs(size.width), height: abs(size.height))
+        if let videoTracks = self.videoTracks {
+            self.frameRate = videoTracks.count > 0 ? try! await Int(videoTracks.first!.load(.nominalFrameRate)) : 0
+            self.duration = try? await self.avAsset.load(.duration)
+            
+            let size = try! await videoTracks.first!.load(.naturalSize).applying(videoTracks.first!.load(.preferredTransform))
+            self.thumbnailImageSize = CGSize(width: abs(size.width), height: abs(size.height))
+        }
     }
     
     public func generate(imageHandler:@escaping (CMTime, CGImage?, CMTime, AVAssetImageGenerator.Result, NSError?) ->Void,
