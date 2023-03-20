@@ -123,10 +123,12 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         thumbnailMaker.generate(
             imageHandler:{requestedTime, image, actualTime, result, error in
                 uIImageFrame.append(UIImage(cgImage: image!))
+                LoadingIndicator.showLoading()
             },
             completion: {
                 let rootVC = FrameEditorViewController()
                 self.navigationController?.pushViewController(rootVC, animated: true)
+                LoadingIndicator.hideLoading()
         })
     }
 
@@ -145,10 +147,8 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         }
     }
     
-    private func showPlayerController(_ url: URL) {
-        // AVPlayer & Asset settings.
-        asset = AVURLAsset(url: url, options: [AVURLAssetPreferPreciseDurationAndTimingKey: true])
-
+    private func showPlayerController() {
+        // AVPlayer settings.
         playerController.player = AVPlayer()
         addChild(playerController)
         view.addSubview(playerController.view)
@@ -317,6 +317,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
     // MARK: - override
     init(_ filter: PHPickerFilter) {
         self.filter = filter
+        self.asset = AVURLAsset(url: URL(fileURLWithPath: ""), options: [AVURLAssetPreferPreciseDurationAndTimingKey: true])
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -332,7 +333,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         self.navigationItem.leftBarButtonItem?.tintColor = .systemYellow
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "film.fill"), style: .plain, target: self, action: #selector(showVideoPickerView))
         self.navigationItem.rightBarButtonItem?.tintColor = .systemYellow
-        self.showPlayerController(URL(fileURLWithPath: ""))
+        self.showPlayerController()
         self.showTrimmerController()
         
         self.showVideoPickerView()
