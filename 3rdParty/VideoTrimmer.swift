@@ -55,8 +55,7 @@ import AVFoundation
 	var asset: AVAsset? {
 		didSet {
 			if let asset = asset {
-				let duration = asset.duration
-				range = CMTimeRange(start: .zero, duration: duration)
+				range = CMTimeRange(start: .zero, duration: DDThumbnailMaker(asset).duration)
 				selectedRange = range
 				lastKnownViewSizeForThumbnailGeneration = .zero
 				setNeedsLayout()
@@ -290,14 +289,10 @@ import AVFoundation
 		guard size.width > 0 && size.height > 0 else {return}
 		guard lastKnownViewSizeForThumbnailGeneration != size || CMTimeRangeEqual(lastKnownThumbnailRange, visibleRange) == false else {return}
 		guard let asset = asset else {return}
-		guard let track = asset.tracks(withMediaType: .video).first else {return}
+        let thumbnailMaker = DDThumbnailMaker(asset)
 
 		lastKnownViewSizeForThumbnailGeneration = size
 		lastKnownThumbnailRange = visibleRange
-
-		let naturalSize = track.naturalSize
-		let transform = track.preferredTransform
-		let fixedSize = naturalSize.applyingVideoTransform(transform)
 
 		let generator = AVAssetImageGenerator(asset: asset)
 		generator.apertureMode = .cleanAperture
@@ -305,7 +300,7 @@ import AVFoundation
 		self.generator = generator
 
 		let height = size.height - thumbView.edgeHeight * 2
-		thumbnailSize = CGSize(width: height / fixedSize.height * fixedSize.width, height: height)
+        thumbnailSize = CGSize(width: height / thumbnailMaker.thumbnailImageSize!.height * thumbnailMaker.thumbnailImageSize!.width, height: height)
 		let numberOfThumbnails = Int(ceil(size.width / thumbnailSize.width))
 
 		var newThumbnails = Array<Thumbnail>()
@@ -313,7 +308,7 @@ import AVFoundation
 		var times = Array<NSValue>()
 		// we add some extra thumbnails as padding
 		for index in -3..<numberOfThumbnails + 6 {
-			let time = CMTimeAdd(visibleRange.start, CMTime(seconds: thumbnailDuration * Double(index), preferredTimescale: asset.duration.timescale * 2))
+            let time = CMTimeAdd(visibleRange.start, CMTime(seconds: thumbnailDuration * Double(index), preferredTimescale: thumbnailMaker.duration.timescale * 2))
 			guard CMTimeCompare(time, .zero) != -1 else {continue}
 			times.append(NSValue(time: time))
 

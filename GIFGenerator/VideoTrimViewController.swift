@@ -22,19 +22,19 @@ extension CMTime {
     }
 }
 
-extension AVAsset {
+extension DDThumbnailMaker {
     var fullRange: CMTimeRange {
-        return CMTimeRange(start: .zero, duration: duration)
+        return CMTimeRange(start: .zero, duration: (self.duration != nil) ? self.duration : .zero)
     }
-    func trimmedComposition(_ range: CMTimeRange) -> AVAsset {
-        guard CMTimeRangeEqual(fullRange, range) == false else {return self}
+    func trimmedComposition(_ range: CMTimeRange) async -> AVAsset {
+        guard CMTimeRangeEqual(fullRange, range) == false else {return self.avAsset}
 
+        let preferredTransform = try! await self.videoTracks.first!.load(.preferredTransform)
         let composition = AVMutableComposition()
-        try? composition.insertTimeRange(range, of: self, at: .zero)
+        try? await composition.insertTimeRange(range, of: self.avAsset, at: .zero)
+        
+        composition.tracks.forEach {$0.preferredTransform = preferredTransform}
 
-        if let videoTrack = tracks(withMediaType: .video).first {
-            composition.tracks.forEach {$0.preferredTransform = videoTrack.preferredTransform}
-        }
         return composition
     }
 }
@@ -117,8 +117,19 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
     }
     
     @objc private func showFrameEditorViewController() {
-        let rootVC = FrameEditorViewController()
-        self.navigationController?.pushViewController(rootVC, animated: true)
+        var uIImageFrame = [UIImage]()
+        let thumbnailMaker = DDThumbnailMaker(self.asset)
+        thumbnailMaker.intervalFrame = 10
+        thumbnailMaker.generate(
+            imageHandler:{requestedTime, image, actualTime, result, error in
+                uIImageFrame.append(UIImage(cgImage: image!))
+                LoadingIndicator.showLoading()
+            },
+            completion: {
+                let rootVC = FrameEditorViewController()
+                self.navigationController?.pushViewController(rootVC, animated: true)
+                LoadingIndicator.hideLoading()
+        })
     }
 
     // MARK: - Private
@@ -129,17 +140,18 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
     }
 
     private func updatePlayerAsset() {
-        let outputRange = trimmer.trimmingState == .none ? trimmer.selectedRange : asset.fullRange
-        let trimmedAsset = asset.trimmedComposition(outputRange)
-        if trimmedAsset != player.currentItem?.asset {
-            player.replaceCurrentItem(with: AVPlayerItem(asset: trimmedAsset))
+        let thumbnailMaker = DDThumbnailMaker(self.asset)
+        let outputRange = trimmer.trimmingState == .none ? trimmer.selectedRange : thumbnailMaker.fullRange
+        Task{
+            let trimmedAsset = await thumbnailMaker.trimmedComposition(outputRange)
+            if trimmedAsset != player.currentItem?.asset {
+                player.replaceCurrentItem(with: AVPlayerItem(asset: trimmedAsset))
+            }
         }
     }
     
-    private func showPlayerController(_ url: URL) {
-        // AVPlayer & Asset settings.
-        asset = AVURLAsset(url: url, options: [AVURLAssetPreferPreciseDurationAndTimingKey: true])
-
+    private func showPlayerController() {
+        // AVPlayer settings.
         playerController.player = AVPlayer()
         addChild(playerController)
         view.addSubview(playerController.view)
@@ -308,6 +320,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
     // MARK: - override
     init(_ filter: PHPickerFilter) {
         self.filter = filter
+        self.asset = AVURLAsset(url: URL(fileURLWithPath: ""), options: [AVURLAssetPreferPreciseDurationAndTimingKey: true])
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -323,7 +336,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         self.navigationItem.leftBarButtonItem?.tintColor = .systemYellow
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "film.fill"), style: .plain, target: self, action: #selector(showVideoPickerView))
         self.navigationItem.rightBarButtonItem?.tintColor = .systemYellow
-        self.showPlayerController(URL(fileURLWithPath: ""))
+        self.showPlayerController()
         self.showTrimmerController()
         
         self.showVideoPickerView()
