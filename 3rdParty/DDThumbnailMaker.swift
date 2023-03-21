@@ -81,7 +81,8 @@ public class DDThumbnailMaker {
         let generator = AVAssetImageGenerator(asset: self.avAsset)
         generator.requestedTimeToleranceBefore = .zero
         generator.requestedTimeToleranceAfter = .zero
-        generator.maximumSize = self.thumbnailImageSize!
+        generator.maximumSize = self.thumbnailImageSize
+        generator.appliesPreferredTrackTransform = true;
         
         return generator
     }

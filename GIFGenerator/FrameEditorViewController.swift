@@ -8,7 +8,18 @@
 import UIKit
 
 class FrameEditorViewController: UIViewController {
+    var imageFrames: [UIImage]! = nil
+    let imageView = UIImageView()
 
+    init(_ imageFrames: [UIImage]) {
+        self.imageFrames = imageFrames
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -18,6 +29,16 @@ class FrameEditorViewController: UIViewController {
         self.navigationController?.navigationBar.tintColor = .systemYellow
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.down.fill"), style: .plain, target: self, action: nil)
         self.navigationItem.rightBarButtonItem?.tintColor = .red
+        self.imageView.frame = CGRect(x: self.view.safeAreaInsets.left,
+                                      y: (self.navigationController?.navigationBar.frame.maxY)!,
+                                      width: self.view.frame.width,
+                                      height: self.view.frame.height * 0.5)
+        self.imageView.backgroundColor = .systemGray
+        self.imageView.contentMode = .scaleAspectFit
+        self.view.addSubview(imageView)
+        self.imageView.animationImages = self.imageFrames
+        self.imageView.animationDuration = 2.0
+        self.imageView.startAnimating()
     }
     
 

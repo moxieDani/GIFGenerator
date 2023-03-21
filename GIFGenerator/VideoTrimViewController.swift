@@ -126,7 +126,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
                 LoadingIndicator.showLoading()
             },
             completion: {
-                let rootVC = FrameEditorViewController()
+                let rootVC = FrameEditorViewController(uIImageFrame)
                 self.navigationController?.pushViewController(rootVC, animated: true)
                 LoadingIndicator.hideLoading()
         })
@@ -344,10 +344,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         self.frameEditorButton.setTitle("Create Image Frames", for: .normal)
         self.frameEditorButton.setTitleColor(.darkGray, for: .normal)
         self.frameEditorButton.backgroundColor = .lightGray
-        self.frameEditorButton.frame = CGRect(x: self.view.safeAreaInsets.left,
-                                       y: view.frame.height - 100,
-                                   width: self.view.frame.width,
-                                  height: 100)
+        self.frameEditorButton.frame = CGRect(x: self.view.safeAreaInsets.left, y: view.frame.height - 100, width: self.view.frame.width, height: 100)
         self.frameEditorButton.isEnabled = false
         self.frameEditorButton.addTarget(self, action: #selector(showFrameEditorViewController), for: .touchUpInside)
         self.view.addSubview(self.frameEditorButton)
