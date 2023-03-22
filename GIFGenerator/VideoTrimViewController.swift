@@ -120,6 +120,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         var uIImageFrame = [UIImage]()
         let thumbnailMaker = DDThumbnailMaker(self.asset)
         thumbnailMaker.intervalFrame = 10
+        thumbnailMaker.thumbnailImageSize = CGSize(width: 1920, height: 1080)
         thumbnailMaker.generate(
             imageHandler:{requestedTime, image, actualTime, result, error in
                 uIImageFrame.append(UIImage(cgImage: image!))
