@@ -6,12 +6,43 @@
 //
 
 import UIKit
+import ImageIO
+import MobileCoreServices
+import UniformTypeIdentifiers
 
 class FrameEditorViewController: UIViewController {
     private var imageFrames: [UIImage]! = nil
     private let imageView = UIImageView()
     private let playPauseButton = UIButton()
 
+    @objc private func showOutputGifViewController() {
+        let documentsDirectoryURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let gifFilePath: URL! = documentsDirectoryURL.appendingPathComponent("test.gif")
+        
+        // Generate GIF file
+        self.generateGif(filePath: gifFilePath)
+        
+        // Get file data of GIF file
+        if let gifSource = CGImageSourceCreateWithURL(gifFilePath! as CFURL, nil) {
+            // Get frames of GIF image
+            let frameCount = CGImageSourceGetCount(gifSource)
+            var frames = [UIImage]()
+
+            for i in 0..<frameCount {
+                guard let cgImage = CGImageSourceCreateImageAtIndex(gifSource, i, nil) else {
+                    continue
+                }
+
+                let uiImage = UIImage(cgImage: cgImage)
+                frames.append(uiImage)
+            }
+
+            let animation = UIImage.animatedImage(with: frames, duration: TimeInterval(frameCount) / 10.0)
+            let rootVC = OutputGifViewController(animation!)
+            self.navigationController?.pushViewController(rootVC, animated: true)
+        }
+    }
+    
     @objc private func pressPlayPauseButton() {
         if self.imageView.layer.speed == 1.0 {
             let layer = self.imageView.layer
@@ -56,7 +87,36 @@ class FrameEditorViewController: UIViewController {
         
         return ret
     }
-
+    
+    private func generateGif(filePath: URL) {
+        let fileProperties: CFDictionary = [kCGImagePropertyGIFDictionary as String: [kCGImagePropertyGIFLoopCount as String: 0]]  as CFDictionary
+        let frameProperties: CFDictionary = [kCGImagePropertyGIFDictionary as String: [(kCGImagePropertyGIFDelayTime as String): 1.0]] as CFDictionary
+        
+        do {
+            if FileManager.default.fileExists(atPath: filePath.path) {
+                try FileManager.default.removeItem(atPath: filePath.path)
+            }
+        } catch {
+            print(error.localizedDescription)
+        }
+        
+        if let url = filePath as CFURL? {
+            if let destination = CGImageDestinationCreateWithURL(url, UTType.gif.identifier as CFString, self.imageFrames.count, nil) {
+                CGImageDestinationSetProperties(destination, fileProperties)
+                for image in self.imageFrames {
+                    autoreleasepool {
+                        if let cgImage = image.cgImage {
+                            CGImageDestinationAddImage(destination, cgImage, frameProperties)
+                        }
+                    }
+                }
+                if !CGImageDestinationFinalize(destination) {
+                    print("Failed to finalize the image destination")
+                }
+            }
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -64,7 +124,7 @@ class FrameEditorViewController: UIViewController {
         self.view.backgroundColor = .systemGray
         
         self.navigationController?.navigationBar.tintColor = .systemYellow
-        self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.down.fill"), style: .plain, target: self, action: nil)
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.down.fill"), style: .plain, target: self, action: #selector(showOutputGifViewController))
         self.navigationItem.rightBarButtonItem?.tintColor = .red
                
         self.imageView.frame = CGRect(x: self.view.safeAreaInsets.left,
