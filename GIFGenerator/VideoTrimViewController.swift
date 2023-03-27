@@ -128,7 +128,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         thumbnailMaker.targetDuration = trimmer.selectedRange
         thumbnailMaker.generate(
             imageHandler:{requestedTime, image, actualTime, result, error in
-                if maximumNumberOfImageFrame > append_count {
+                if result == .succeeded && maximumNumberOfImageFrame > append_count {
                     uIImageFrame.append(UIImage(cgImage: image!))
                     append_count+=1
                 }
