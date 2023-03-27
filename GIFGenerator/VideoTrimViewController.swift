@@ -52,6 +52,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
     private var player: AVPlayer! {playerController.player}
     private var asset: AVAsset!
     private var filter: PHPickerFilter!
+    private var thumbnailMaker: DDThumbnailMaker! = nil
     
     private let frameEditorButton = UIButton()
 
@@ -121,7 +122,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         var append_count = 0
         let maximumNumberOfImageFrame = DeviceInfo.getMaximumNumberOfImageFrame()
         var uIImageFrame = [UIImage]()
-        let thumbnailMaker = DDThumbnailMaker(self.asset)
+        
         thumbnailMaker.intervalFrame = 1
         thumbnailMaker.thumbnailImageSize = CGSize(width: 1920, height: 1080)
         thumbnailMaker.generate(
@@ -146,7 +147,6 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
     }
 
     private func updatePlayerAsset() {
-        let thumbnailMaker = DDThumbnailMaker(self.asset)
         let outputRange = trimmer.trimmingState == .none ? trimmer.selectedRange : thumbnailMaker.fullRange
         Task{
             let trimmedAsset = await thumbnailMaker.trimmedComposition(outputRange)
@@ -225,7 +225,6 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         ])
 
         trimmer.asset = asset
-        updatePlayerAsset()
 
         player.addPeriodicTimeObserver(forInterval: CMTime(value: 1, timescale: 30), queue: .main) { [weak self] time in
             guard let self = self else {return}
@@ -241,6 +240,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
     
     private func updateTrimmerController() {
         trimmer.asset = asset
+        updateThumbnailMaker()
         updatePlayerAsset()
 
         player.addPeriodicTimeObserver(forInterval: CMTime(value: 1, timescale: 30), queue: .main) { [weak self] time in
@@ -255,8 +255,15 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         updateLabels()
     }
     
+    private func updateThumbnailMaker() {
+        if thumbnailMaker == nil {
+            thumbnailMaker = DDThumbnailMaker(asset)
+        } else {
+            thumbnailMaker.avAsset = asset
+        }
+    }
+    
     private func updateFrameEditorButton() {
-        let thumbnailMaker = DDThumbnailMaker(self.asset)
         let availableDurationSec = DeviceInfo.availableDurationSec(frameRate: thumbnailMaker.frameRate)
         if trimmer.selectedRange.duration.seconds < availableDurationSec {
             self.frameEditorButton.backgroundColor = .systemYellow
