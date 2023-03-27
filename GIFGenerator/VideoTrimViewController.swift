@@ -245,6 +245,8 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
     private func updateTrimmerController() {
         trimmer.asset = asset
         updateThumbnailMaker()
+        let availableDurationSec = DeviceInfo.availableDurationSec(frameRate: thumbnailMaker.frameRate)
+        trimmer.thumbView.updateColor(color: trimmer.selectedRange.duration.seconds <= availableDurationSec ? UIColor.systemYellow : UIColor.darkGray)
         updatePlayerAsset()
 
         player.addPeriodicTimeObserver(forInterval: CMTime(value: 1, timescale: 30), queue: .main) { [weak self] time in
