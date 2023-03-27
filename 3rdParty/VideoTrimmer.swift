@@ -186,6 +186,8 @@ import AVFoundation
 			case .trailing: return selectedRange.end
 		}
 	}
+    
+    var stopPanningcompletion: (() -> Void)? = nil
 
 	// gesture recognizers used. Can be used, for instance, to
 	// require a tableview panGestureRecognizer to fail
@@ -452,6 +454,9 @@ import AVFoundation
 		trimmingState = .none
 		stopZoomIfNeeded()
 		impactFeedbackGenerator = nil
+        if let stopPanningCompletion = self.stopPanningcompletion {
+            stopPanningCompletion()
+        }
 		sendActions(for: Self.didEndTrimming)
 
 		UIView.animate(withDuration: 0.25, delay: 0, options: [.beginFromCurrentState, .allowUserInteraction], animations: {

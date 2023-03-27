@@ -174,6 +174,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         // THIS IS WHERE WE SETUP THE VIDEOTRIMMER:
         trimmer = VideoTrimmer()
         trimmer.minimumDuration = CMTime(seconds: 1, preferredTimescale: 600)
+        trimmer.minimumDuration = CMTime(seconds: 0.5, preferredTimescale: 600)
         trimmer.addTarget(self, action: #selector(didBeginTrimming(_:)), for: VideoTrimmer.didBeginTrimming)
         trimmer.addTarget(self, action: #selector(didEndTrimming(_:)), for: VideoTrimmer.didEndTrimming)
         trimmer.addTarget(self, action: #selector(selectedRangeDidChanged(_:)), for: VideoTrimmer.selectedRangeChanged)
@@ -188,6 +189,9 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
             trimmer.topAnchor.constraint(equalTo: playerController.view.bottomAnchor, constant: 16),
             trimmer.heightAnchor.constraint(equalToConstant: 50),
         ])
+        trimmer.stopPanningcompletion = { [self] in
+            trimmer.thumbView.updateColor(color:UIColor.darkGray)
+        }
 
         leadingTrimLabel = UILabel()
         leadingTrimLabel.font = UIFont.preferredFont(forTextStyle: .caption1)

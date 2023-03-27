@@ -32,8 +32,7 @@ class VideoTrimmerThumb: UIView {
 	}
 
 	// MARK: - Private
-	private func updateColor() {
-		let color = UIColor.systemYellow
+    func updateColor(color:UIColor) {
 		leadingView.backgroundColor = color
 		trailingView.backgroundColor = color
 		topView.backgroundColor = color
@@ -76,7 +75,7 @@ class VideoTrimmerThumb: UIView {
 		wrapperView.addSubview(leadingGrabber)
 		wrapperView.addSubview(trailingGrabber)
 
-		updateColor()
+        updateColor(color: UIColor.systemYellow)
 	}
 
 
