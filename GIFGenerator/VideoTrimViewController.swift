@@ -245,8 +245,11 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
     private func updateTrimmerController() {
         trimmer.asset = asset
         updateThumbnailMaker()
-        let availableDurationSec = DeviceInfo.availableDurationSec(frameRate: thumbnailMaker.frameRate)
+        
+        let availableDurationSec = min(DeviceInfo.availableDurationSec(frameRate: thumbnailMaker.frameRate), trimmer.selectedRange.end.seconds)
+        trimmer.selectedRange = CMTimeRange(start: .zero, end: CMTime(seconds: Double(availableDurationSec), preferredTimescale: CMTimeScale(NSEC_PER_MSEC)))
         trimmer.thumbView.updateColor(color: trimmer.selectedRange.duration.seconds <= availableDurationSec ? UIColor.systemYellow : UIColor.darkGray)
+        
         updatePlayerAsset()
 
         player.addPeriodicTimeObserver(forInterval: CMTime(value: 1, timescale: 30), queue: .main) { [weak self] time in
@@ -271,7 +274,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
     
     private func updateFrameEditorButton() {
         let availableDurationSec = DeviceInfo.availableDurationSec(frameRate: thumbnailMaker.frameRate)
-        if trimmer.selectedRange.duration.seconds < availableDurationSec {
+        if trimmer.selectedRange.duration.seconds <= availableDurationSec {
             self.frameEditorButton.backgroundColor = .systemYellow
             self.frameEditorButton.setTitleColor(.black, for: .normal)
             self.frameEditorButton.isEnabled = true
