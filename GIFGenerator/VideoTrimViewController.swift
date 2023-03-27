@@ -195,7 +195,8 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
             trimmer.heightAnchor.constraint(equalToConstant: 50),
         ])
         trimmer.stopPanningcompletion = { [self] in
-            trimmer.thumbView.updateColor(color: trimmer.selectedRange.duration.seconds <= 3.0 ? UIColor.systemYellow : UIColor.darkGray)
+            let availableDurationSec = DeviceInfo.availableDurationSec(frameRate: thumbnailMaker.frameRate)
+            trimmer.thumbView.updateColor(color: trimmer.selectedRange.duration.seconds <= availableDurationSec ? UIColor.systemYellow : UIColor.darkGray)
             updateFrameEditorButton()
         }
 

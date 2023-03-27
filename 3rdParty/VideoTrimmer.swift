@@ -454,9 +454,6 @@ import AVFoundation
 		trimmingState = .none
 		stopZoomIfNeeded()
 		impactFeedbackGenerator = nil
-        if let stopPanningCompletion = self.stopPanningcompletion {
-            stopPanningCompletion()
-        }
 		sendActions(for: Self.didEndTrimming)
 
 		UIView.animate(withDuration: 0.25, delay: 0, options: [.beginFromCurrentState, .allowUserInteraction], animations: {
@@ -593,6 +590,10 @@ import AVFoundation
 				selectedRange = CMTimeRange(start: time, end: selectedRange.end)
 				sendActions(for: Self.selectedRangeChanged)
 				setNeedsLayout()
+            
+                if let stopPanningCompletion = self.stopPanningcompletion {
+                    stopPanningCompletion()
+                }
 
 				startZoomWaitTimer()
 
@@ -651,6 +652,10 @@ import AVFoundation
 				selectedRange = CMTimeRange(start: selectedRange.start, end: time)
 				sendActions(for: Self.selectedRangeChanged)
 				setNeedsLayout()
+            
+                if let stopPanningCompletion = self.stopPanningcompletion {
+                    stopPanningCompletion()
+                }
 
 				startZoomWaitTimer()
 
