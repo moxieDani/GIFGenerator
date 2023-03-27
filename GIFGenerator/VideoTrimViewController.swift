@@ -117,14 +117,19 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
     }
     
     @objc private func showFrameEditorViewController() {
+        LoadingIndicator.showLoading()
+        var append_count = 0
+        let maximumNumberOfImageFrame = DeviceInfo.getMaximumNumberOfImageFrame()
         var uIImageFrame = [UIImage]()
         let thumbnailMaker = DDThumbnailMaker(self.asset)
-        thumbnailMaker.intervalFrame = 10
+        thumbnailMaker.intervalFrame = 1
         thumbnailMaker.thumbnailImageSize = CGSize(width: 1920, height: 1080)
         thumbnailMaker.generate(
             imageHandler:{requestedTime, image, actualTime, result, error in
-                uIImageFrame.append(UIImage(cgImage: image!))
-                LoadingIndicator.showLoading()
+                if maximumNumberOfImageFrame > append_count {
+                    uIImageFrame.append(UIImage(cgImage: image!))
+                    append_count+=1
+                }
             },
             completion: {
                 let rootVC = FrameEditorViewController(uIImageFrame)
