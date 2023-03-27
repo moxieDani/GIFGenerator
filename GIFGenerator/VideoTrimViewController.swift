@@ -123,6 +123,8 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         let maximumNumberOfImageFrame = DeviceInfo.getMaximumNumberOfImageFrame()
         var uIImageFrame = [UIImage]()
         
+        player.pause()
+        
         thumbnailMaker.intervalFrame = 1
         thumbnailMaker.thumbnailImageSize = CGSize(width: 1920, height: 1080)
         thumbnailMaker.targetDuration = trimmer.selectedRange
