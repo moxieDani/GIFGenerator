@@ -11,7 +11,7 @@ import AVKit
 
 public class DDThumbnailMaker {
     public var avAsset: AVAsset! = nil
-    public var intervalMsec: UInt! = 1000
+    public var intervalMsec: CMTimeValue! = 1000
     public var intervalFrame: UInt! = 0
     public var targetDuration: CMTimeRange! = nil
     public var thumbnailImageSize: CGSize! = CGSize(width: 192, height: 144)
@@ -90,36 +90,32 @@ public class DDThumbnailMaker {
     
     private func getRequestedAssetTimes() async -> [NSValue] {
         // Get information about avAsset
-        let durationValue = Float(self.duration.value)
-        let durationTimescale = Float(self.duration.timescale)
+        let durationValue = self.duration.value
+        let durationTimescale = self.duration.timescale
         let durationFlags = self.duration.flags
         let durationEpoch = self.duration.epoch
-
-        let durationTimeMsec = Int(durationValue) * 1000 / Int(durationTimescale)
-        let numberOfFrames = Int(durationTimeMsec * self.frameRate) / 1000
-        let timeValuePerFrame = Int(durationTimescale) / self.frameRate
+        let numberOfFrames = durationValue * Int64(self.frameRate) / Int64(durationTimescale)
         
         var times: [NSValue] = []
         for i in 1...numberOfFrames {
-            let timeValue = UInt(timeValuePerFrame * i)
-            let timeStampMsec = UInt(timeValue * 1000) / UInt(durationTimescale)
+            let timeValue = CMTimeValue((durationValue * Int64(i)) / numberOfFrames)
             var shouldAppend = false
             
             if self.intervalFrame > 0 {
                 shouldAppend = (UInt(i) % self.intervalFrame == 0)
             } else {
-                shouldAppend = (timeStampMsec % self.intervalMsec == 0)
+                shouldAppend = (timeValue % self.intervalMsec == 0)
             }
-            
+
             if self.targetDuration != nil {
-                let time = CMTime(seconds: Double(timeStampMsec/1000), preferredTimescale: CMTimeScale(NSEC_PER_MSEC))
+                let time = CMTime(seconds: Double(timeValue/Int64(durationTimescale)), preferredTimescale: CMTimeScale(NSEC_PER_MSEC))
                 shouldAppend = self.targetDuration.containsTime(time)
             } else {
                 shouldAppend = shouldAppend || i==1
             }
             
             if shouldAppend {
-                let frameTime = CMTime(value: CMTimeValue(timeValue), timescale: CMTimeScale(durationTimescale), flags: durationFlags, epoch: durationEpoch)
+                let frameTime = CMTime(value: timeValue, timescale: durationTimescale, flags: durationFlags, epoch: durationEpoch)
                 times.append(NSValue(time: frameTime))
             }
         }
