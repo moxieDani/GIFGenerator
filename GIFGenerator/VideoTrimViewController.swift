@@ -55,6 +55,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
     private var thumbnailMaker: DDThumbnailMaker! = nil
     
     private let frameEditorButton = UIButton()
+    private let frameRateButton = UIButton()
 
     // MARK: - Input
     @objc private func didBeginTrimming(_ sender: VideoTrimmer) {
@@ -383,6 +384,30 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         self.frameEditorButton.isEnabled = false
         self.frameEditorButton.addTarget(self, action: #selector(showFrameEditorViewController), for: .touchUpInside)
         self.view.addSubview(self.frameEditorButton)
+        
+        
+        let attributedString = NSMutableAttributedString(string: "30\nFPS")
+        let range = NSRange(location: attributedString.string.count - 3, length: 3)
+        attributedString.addAttribute(.font, value: UIFont.systemFont(ofSize: 10), range: range)
+
+        self.frameRateButton.setAttributedTitle(attributedString, for: .normal)
+        self.frameRateButton.frame = CGRect(x: (view.frame.width/2) - 25, y: self.frameEditorButton.frame.minY - 150, width: 50, height: 50)
+        self.frameRateButton.backgroundColor = .systemYellow
+        
+        self.frameRateButton.titleLabel?.numberOfLines = 2
+        self.frameRateButton.titleLabel?.lineBreakMode = .byTruncatingTail
+        self.frameRateButton.titleLabel?.textAlignment = .center
+        self.frameRateButton.titleLabel?.font = UIFont.systemFont(ofSize: 20)
+        self.frameRateButton.titleLabel?.adjustsFontSizeToFitWidth = true
+        self.frameRateButton.titleLabel?.minimumScaleFactor = 0.5 // 글꼴 축소 최소 비율
+        
+        self.frameRateButton.layer.borderWidth = 2.0
+        self.frameRateButton.layer.borderColor = UIColor.black.cgColor
+        self.frameRateButton.layer.cornerRadius = self.frameRateButton.frame.width / 2
+        self.frameRateButton.clipsToBounds = true
+        
+        
+        self.view.addSubview(self.frameRateButton)
     }
     
 
