@@ -53,6 +53,15 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
     private var asset: AVAsset!
     private var filter: PHPickerFilter!
     private var thumbnailMaker: DDThumbnailMaker! = nil
+    private var targetFrameRate: Float! {
+        didSet {
+            let attributedString = NSMutableAttributedString(string: "\(Int(round(targetFrameRate)))\nFPS")
+            let range = NSRange(location: attributedString.string.count - 3, length: 3)
+            attributedString.addAttribute(.font, value: UIFont.systemFont(ofSize: 10), range: range)
+
+            self.frameRateButton.setAttributedTitle(attributedString, for: .normal)
+        }
+    }
     
     private let frameEditorButton = UIButton()
     private let frameRateButton = UIButton()
@@ -296,13 +305,13 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         }
     }
     
-    private func showFrameRateButton() {
-        let attributedString = NSMutableAttributedString(string: "30\nFPS")
+    private func showTargetFrameRateButton() {
+        let attributedString = NSMutableAttributedString(string: "0\nFPS")
         let range = NSRange(location: attributedString.string.count - 3, length: 3)
         attributedString.addAttribute(.font, value: UIFont.systemFont(ofSize: 10), range: range)
 
         self.frameRateButton.setAttributedTitle(attributedString, for: .normal)
-        self.frameRateButton.frame = CGRect(x: (view.frame.width/2) - 25, y: self.frameEditorButton.frame.minY - 150, width: 50, height: 50)
+        self.frameRateButton.frame = CGRect(x: (view.frame.width/2) - 25, y: self.frameEditorButton.frame.minY - 100, width: 50, height: 50)
         self.frameRateButton.backgroundColor = .systemYellow
         
         self.frameRateButton.titleLabel?.numberOfLines = 2
@@ -316,8 +325,13 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         self.frameRateButton.layer.borderColor = UIColor.darkGray.cgColor
         self.frameRateButton.layer.cornerRadius = self.frameRateButton.frame.width / 2
         self.frameRateButton.clipsToBounds = true
-        
+        self.frameRateButton.isHidden = true
         self.view.addSubview(self.frameRateButton)
+    }
+    
+    private func updateTargetFrameRate(_ frameRate:Float) {
+        self.targetFrameRate = frameRate
+        self.frameRateButton.isHidden = false
     }
     
     private func showNormalVideoFromPHPicker(_ provider: NSItemProvider) {
@@ -329,6 +343,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
                         self.updatePlayerController(url)
                         self.updateTrimmerController()
                         self.updateFrameEditorButton()
+                        self.updateTargetFrameRate(self.thumbnailMaker.frameRate)
                     }
                     LoadingIndicator.hideLoading()
                 }
@@ -365,6 +380,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
                                         self.updatePlayerController(destinationURL)
                                         self.updateTrimmerController()
                                         self.updateFrameEditorButton()
+                                        self.updateTargetFrameRate(self.thumbnailMaker.frameRate)
                                         LoadingIndicator.hideLoading()
                                     }
                                 }
@@ -411,7 +427,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         self.showTrimmerController()
         self.showVideoPickerView()
         self.showFrameEditorButton()
-        self.showFrameRateButton()
+        self.showTargetFrameRateButton()
     }
     
 

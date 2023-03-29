@@ -118,7 +118,7 @@ class DeviceInfo {
         }
     }
     
-    static func availableDurationSec(frameRate:Int) -> Double {
-        return Double(getMaximumNumberOfImageFrame()) / Double(frameRate)
+    static func availableDurationSec(frameRate:Float) -> Double {
+        return Double(getMaximumNumberOfImageFrame()) / Double(round(frameRate))
     }
 }
