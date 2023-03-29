@@ -52,8 +52,19 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
     private var player: AVPlayer! {playerController.player}
     private var asset: AVAsset!
     private var filter: PHPickerFilter!
+    private var thumbnailMaker: DDThumbnailMaker! = nil
+    private var targetFrameRate: Float! {
+        didSet {
+            let attributedString = NSMutableAttributedString(string: "\(Int(round(targetFrameRate)))\nFPS")
+            let range = NSRange(location: attributedString.string.count - 3, length: 3)
+            attributedString.addAttribute(.font, value: UIFont.systemFont(ofSize: 10), range: range)
+
+            self.frameRateButton.setAttributedTitle(attributedString, for: .normal)
+        }
+    }
     
     private let frameEditorButton = UIButton()
+    private let frameRateButton = UIButton()
 
     // MARK: - Input
     @objc private func didBeginTrimming(_ sender: VideoTrimmer) {
@@ -117,16 +128,25 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
     }
     
     @objc private func showFrameEditorViewController() {
+        LoadingIndicator.showLoading()
+        var append_count = 0
+        let maximumNumberOfImageFrame = DeviceInfo.getMaximumNumberOfImageFrame()
         var uIImageFrame = [UIImage]()
-        let thumbnailMaker = DDThumbnailMaker(self.asset)
-        thumbnailMaker.intervalFrame = 10
+        
+        player.pause()
+        
+        thumbnailMaker.intervalFrame = 1
+        thumbnailMaker.thumbnailImageSize = CGSize(width: 1920, height: 1080)
+        thumbnailMaker.targetDuration = trimmer.selectedRange
         thumbnailMaker.generate(
             imageHandler:{requestedTime, image, actualTime, result, error in
-                uIImageFrame.append(UIImage(cgImage: image!))
-                LoadingIndicator.showLoading()
+                if result == .succeeded && maximumNumberOfImageFrame > append_count {
+                    uIImageFrame.append(UIImage(cgImage: image!))
+                    append_count+=1
+                }
             },
             completion: {
-                let rootVC = FrameEditorViewController()
+                let rootVC = FrameEditorViewController(uIImageFrame)
                 self.navigationController?.pushViewController(rootVC, animated: true)
                 LoadingIndicator.hideLoading()
         })
@@ -140,7 +160,6 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
     }
 
     private func updatePlayerAsset() {
-        let thumbnailMaker = DDThumbnailMaker(self.asset)
         let outputRange = trimmer.trimmingState == .none ? trimmer.selectedRange : thumbnailMaker.fullRange
         Task{
             let trimmedAsset = await thumbnailMaker.trimmedComposition(outputRange)
@@ -172,7 +191,8 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
     private func showTrimmerController() {
         // THIS IS WHERE WE SETUP THE VIDEOTRIMMER:
         trimmer = VideoTrimmer()
-        trimmer.minimumDuration = CMTime(seconds: 1, preferredTimescale: 600)
+        trimmer.thumbView.updateColor(color: UIColor.darkGray)
+        trimmer.minimumDuration = CMTime(seconds: 0.5, preferredTimescale: 600)
         trimmer.addTarget(self, action: #selector(didBeginTrimming(_:)), for: VideoTrimmer.didBeginTrimming)
         trimmer.addTarget(self, action: #selector(didEndTrimming(_:)), for: VideoTrimmer.didEndTrimming)
         trimmer.addTarget(self, action: #selector(selectedRangeDidChanged(_:)), for: VideoTrimmer.selectedRangeChanged)
@@ -187,6 +207,11 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
             trimmer.topAnchor.constraint(equalTo: playerController.view.bottomAnchor, constant: 16),
             trimmer.heightAnchor.constraint(equalToConstant: 50),
         ])
+        trimmer.stopPanningcompletion = { [self] in
+            let availableDurationSec = DeviceInfo.availableDurationSec(frameRate: thumbnailMaker.frameRate)
+            trimmer.thumbView.updateColor(color: trimmer.selectedRange.duration.seconds <= availableDurationSec ? UIColor.systemYellow : UIColor.darkGray)
+            updateFrameEditorButton()
+        }
 
         leadingTrimLabel = UILabel()
         leadingTrimLabel.font = UIFont.preferredFont(forTextStyle: .caption1)
@@ -214,7 +239,6 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         ])
 
         trimmer.asset = asset
-        updatePlayerAsset()
 
         player.addPeriodicTimeObserver(forInterval: CMTime(value: 1, timescale: 30), queue: .main) { [weak self] time in
             guard let self = self else {return}
@@ -230,6 +254,12 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
     
     private func updateTrimmerController() {
         trimmer.asset = asset
+        updateThumbnailMaker()
+        
+        let availableDurationSec = min(DeviceInfo.availableDurationSec(frameRate: thumbnailMaker.frameRate), trimmer.selectedRange.end.seconds)
+        trimmer.selectedRange = CMTimeRange(start: .zero, end: CMTime(seconds: Double(availableDurationSec), preferredTimescale: CMTimeScale(NSEC_PER_MSEC)))
+        trimmer.thumbView.updateColor(color: trimmer.selectedRange.duration.seconds <= availableDurationSec ? UIColor.systemYellow : UIColor.darkGray)
+        
         updatePlayerAsset()
 
         player.addPeriodicTimeObserver(forInterval: CMTime(value: 1, timescale: 30), queue: .main) { [weak self] time in
@@ -244,10 +274,64 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         updateLabels()
     }
     
-    private func updateframeEditorButton() {
-        self.frameEditorButton.backgroundColor = .systemYellow
-        self.frameEditorButton.setTitleColor(.black, for: .normal)
-        self.frameEditorButton.isEnabled = true
+    private func updateThumbnailMaker() {
+        if thumbnailMaker == nil {
+            thumbnailMaker = DDThumbnailMaker(asset)
+        } else {
+            thumbnailMaker.avAsset = asset
+        }
+    }
+    
+    private func showFrameEditorButton() {
+        self.frameEditorButton.setTitle("Create Image Frames", for: .normal)
+        self.frameEditorButton.setTitleColor(.darkGray, for: .normal)
+        self.frameEditorButton.backgroundColor = .lightGray
+        self.frameEditorButton.frame = CGRect(x: self.view.safeAreaInsets.left, y: view.frame.height - 100, width: self.view.frame.width, height: 100)
+        self.frameEditorButton.isEnabled = false
+        self.frameEditorButton.addTarget(self, action: #selector(showFrameEditorViewController), for: .touchUpInside)
+        self.view.addSubview(self.frameEditorButton)
+    }
+    
+    private func updateFrameEditorButton() {
+        let availableDurationSec = DeviceInfo.availableDurationSec(frameRate: thumbnailMaker.frameRate)
+        if trimmer.selectedRange.duration.seconds <= availableDurationSec {
+            self.frameEditorButton.backgroundColor = .systemYellow
+            self.frameEditorButton.setTitleColor(.black, for: .normal)
+            self.frameEditorButton.isEnabled = true
+        } else {
+            self.frameEditorButton.setTitleColor(.darkGray, for: .normal)
+            self.frameEditorButton.backgroundColor = .lightGray
+            self.frameEditorButton.isEnabled = false
+        }
+    }
+    
+    private func showTargetFrameRateButton() {
+        let attributedString = NSMutableAttributedString(string: "0\nFPS")
+        let range = NSRange(location: attributedString.string.count - 3, length: 3)
+        attributedString.addAttribute(.font, value: UIFont.systemFont(ofSize: 10), range: range)
+
+        self.frameRateButton.setAttributedTitle(attributedString, for: .normal)
+        self.frameRateButton.frame = CGRect(x: (view.frame.width/2) - 25, y: self.frameEditorButton.frame.minY - 100, width: 50, height: 50)
+        self.frameRateButton.backgroundColor = .systemYellow
+        
+        self.frameRateButton.titleLabel?.numberOfLines = 2
+        self.frameRateButton.titleLabel?.lineBreakMode = .byTruncatingTail
+        self.frameRateButton.titleLabel?.textAlignment = .center
+        self.frameRateButton.titleLabel?.font = UIFont.systemFont(ofSize: 20)
+        self.frameRateButton.titleLabel?.adjustsFontSizeToFitWidth = true
+        self.frameRateButton.titleLabel?.minimumScaleFactor = 0.5 // 글꼴 축소 최소 비율
+        
+        self.frameRateButton.layer.borderWidth = 2.0
+        self.frameRateButton.layer.borderColor = UIColor.darkGray.cgColor
+        self.frameRateButton.layer.cornerRadius = self.frameRateButton.frame.width / 2
+        self.frameRateButton.clipsToBounds = true
+        self.frameRateButton.isHidden = true
+        self.view.addSubview(self.frameRateButton)
+    }
+    
+    private func updateTargetFrameRate(_ frameRate:Float) {
+        self.targetFrameRate = frameRate
+        self.frameRateButton.isHidden = false
     }
     
     private func showNormalVideoFromPHPicker(_ provider: NSItemProvider) {
@@ -258,7 +342,8 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
                     if let url = videoURL as? URL {
                         self.updatePlayerController(url)
                         self.updateTrimmerController()
-                        self.updateframeEditorButton()
+                        self.updateFrameEditorButton()
+                        self.updateTargetFrameRate(self.thumbnailMaker.frameRate)
                     }
                     LoadingIndicator.hideLoading()
                 }
@@ -294,7 +379,8 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
                                     DispatchQueue.main.async {
                                         self.updatePlayerController(destinationURL)
                                         self.updateTrimmerController()
-                                        self.updateframeEditorButton()
+                                        self.updateFrameEditorButton()
+                                        self.updateTargetFrameRate(self.thumbnailMaker.frameRate)
                                         LoadingIndicator.hideLoading()
                                     }
                                 }
@@ -336,21 +422,12 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         self.navigationItem.leftBarButtonItem?.tintColor = .systemYellow
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "film.fill"), style: .plain, target: self, action: #selector(showVideoPickerView))
         self.navigationItem.rightBarButtonItem?.tintColor = .systemYellow
+
         self.showPlayerController()
         self.showTrimmerController()
-        
         self.showVideoPickerView()
-        
-        self.frameEditorButton.setTitle("Create Image Frames", for: .normal)
-        self.frameEditorButton.setTitleColor(.darkGray, for: .normal)
-        self.frameEditorButton.backgroundColor = .lightGray
-        self.frameEditorButton.frame = CGRect(x: self.view.safeAreaInsets.left,
-                                       y: view.frame.height - 100,
-                                   width: self.view.frame.width,
-                                  height: 100)
-        self.frameEditorButton.isEnabled = false
-        self.frameEditorButton.addTarget(self, action: #selector(showFrameEditorViewController), for: .touchUpInside)
-        self.view.addSubview(self.frameEditorButton)
+        self.showFrameEditorButton()
+        self.showTargetFrameRateButton()
     }
     
 

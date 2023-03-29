@@ -186,6 +186,8 @@ import AVFoundation
 			case .trailing: return selectedRange.end
 		}
 	}
+    
+    var stopPanningcompletion: (() -> Void)? = nil
 
 	// gesture recognizers used. Can be used, for instance, to
 	// require a tableview panGestureRecognizer to fail
@@ -588,6 +590,10 @@ import AVFoundation
 				selectedRange = CMTimeRange(start: time, end: selectedRange.end)
 				sendActions(for: Self.selectedRangeChanged)
 				setNeedsLayout()
+            
+                if let stopPanningCompletion = self.stopPanningcompletion {
+                    stopPanningCompletion()
+                }
 
 				startZoomWaitTimer()
 
@@ -646,6 +652,10 @@ import AVFoundation
 				selectedRange = CMTimeRange(start: selectedRange.start, end: time)
 				sendActions(for: Self.selectedRangeChanged)
 				setNeedsLayout()
+            
+                if let stopPanningCompletion = self.stopPanningcompletion {
+                    stopPanningCompletion()
+                }
 
 				startZoomWaitTimer()
 

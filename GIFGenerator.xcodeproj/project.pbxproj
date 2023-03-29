@@ -18,6 +18,8 @@
 		5176A98B29C1E0920049AAC1 /* VideoTrimmerThumb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5176A98929C1E0920049AAC1 /* VideoTrimmerThumb.swift */; };
 		5176A98E29C401990049AAC1 /* FrameEditorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5176A98D29C401990049AAC1 /* FrameEditorViewController.swift */; };
 		5176A99029C43ABA0049AAC1 /* LoadingIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5176A98F29C43ABA0049AAC1 /* LoadingIndicator.swift */; };
+		51A6130329CBE2770036EBBF /* OutputGifViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A6130229CBE2770036EBBF /* OutputGifViewController.swift */; };
+		51B521D029D11A1A00F449F9 /* DeviceInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51B521CF29D11A1A00F449F9 /* DeviceInfo.swift */; };
 		51C30A5129C6B649000C1FF2 /* DDThumbnailMaker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51C30A5029C6B649000C1FF2 /* DDThumbnailMaker.swift */; };
 /* End PBXBuildFile section */
 
@@ -35,6 +37,8 @@
 		5176A98929C1E0920049AAC1 /* VideoTrimmerThumb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoTrimmerThumb.swift; sourceTree = "<group>"; };
 		5176A98D29C401990049AAC1 /* FrameEditorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameEditorViewController.swift; sourceTree = "<group>"; };
 		5176A98F29C43ABA0049AAC1 /* LoadingIndicator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LoadingIndicator.swift; path = GIFGenerator/LoadingIndicator.swift; sourceTree = SOURCE_ROOT; };
+		51A6130229CBE2770036EBBF /* OutputGifViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutputGifViewController.swift; sourceTree = "<group>"; };
+		51B521CF29D11A1A00F449F9 /* DeviceInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceInfo.swift; sourceTree = "<group>"; };
 		51C30A5029C6B649000C1FF2 /* DDThumbnailMaker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDThumbnailMaker.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -74,6 +78,7 @@
 				5176A97429C16B960049AAC1 /* MainViewController.swift */,
 				5176A98629C172990049AAC1 /* VideoTrimViewController.swift */,
 				5176A98D29C401990049AAC1 /* FrameEditorViewController.swift */,
+				51A6130229CBE2770036EBBF /* OutputGifViewController.swift */,
 				5176A97629C16B960049AAC1 /* Main.storyboard */,
 				5176A97929C16B9A0049AAC1 /* Assets.xcassets */,
 				5176A97B29C16B9A0049AAC1 /* LaunchScreen.storyboard */,
@@ -89,6 +94,7 @@
 				5176A98929C1E0920049AAC1 /* VideoTrimmerThumb.swift */,
 				5176A98F29C43ABA0049AAC1 /* LoadingIndicator.swift */,
 				51C30A5029C6B649000C1FF2 /* DDThumbnailMaker.swift */,
+				51B521CF29D11A1A00F449F9 /* DeviceInfo.swift */,
 			);
 			path = 3rdParty;
 			sourceTree = "<group>";
@@ -168,8 +174,10 @@
 				5176A97529C16B960049AAC1 /* MainViewController.swift in Sources */,
 				5176A97129C16B960049AAC1 /* AppDelegate.swift in Sources */,
 				5176A98E29C401990049AAC1 /* FrameEditorViewController.swift in Sources */,
+				51B521D029D11A1A00F449F9 /* DeviceInfo.swift in Sources */,
 				5176A99029C43ABA0049AAC1 /* LoadingIndicator.swift in Sources */,
 				5176A98B29C1E0920049AAC1 /* VideoTrimmerThumb.swift in Sources */,
+				51A6130329CBE2770036EBBF /* OutputGifViewController.swift in Sources */,
 				5176A98729C1729A0049AAC1 /* VideoTrimViewController.swift in Sources */,
 				51C30A5129C6B649000C1FF2 /* DDThumbnailMaker.swift in Sources */,
 				5176A97329C16B960049AAC1 /* SceneDelegate.swift in Sources */,

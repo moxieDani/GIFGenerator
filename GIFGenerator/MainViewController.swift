@@ -41,10 +41,7 @@ class MainViewController: UIViewController {
         self.videoToGifButton.layer.shadowOpacity = 1.0
         self.videoToGifButton.layer.shadowOffset = CGSize.zero
         self.videoToGifButton.layer.shadowRadius = 6
-        self.videoToGifButton.frame = CGRect(x: 20,
-                                        y: self.view.safeAreaInsets.top + 100,
-                                    width: self.view.frame.width - 40,
-                                   height: 52)
+        self.videoToGifButton.frame = CGRect(x: 20, y: self.view.safeAreaInsets.top + 100, width: self.view.frame.width - 40, height: 52)
         self.videoToGifButton.addTarget(self, action: #selector(showVideoPickerView), for: .touchUpInside)
         self.view.addSubview(self.videoToGifButton)
         
