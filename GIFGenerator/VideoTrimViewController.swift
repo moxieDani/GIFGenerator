@@ -273,6 +273,16 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         }
     }
     
+    private func showFrameEditorButton() {
+        self.frameEditorButton.setTitle("Create Image Frames", for: .normal)
+        self.frameEditorButton.setTitleColor(.darkGray, for: .normal)
+        self.frameEditorButton.backgroundColor = .lightGray
+        self.frameEditorButton.frame = CGRect(x: self.view.safeAreaInsets.left, y: view.frame.height - 100, width: self.view.frame.width, height: 100)
+        self.frameEditorButton.isEnabled = false
+        self.frameEditorButton.addTarget(self, action: #selector(showFrameEditorViewController), for: .touchUpInside)
+        self.view.addSubview(self.frameEditorButton)
+    }
+    
     private func updateFrameEditorButton() {
         let availableDurationSec = DeviceInfo.availableDurationSec(frameRate: thumbnailMaker.frameRate)
         if trimmer.selectedRange.duration.seconds <= availableDurationSec {
@@ -284,6 +294,30 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
             self.frameEditorButton.backgroundColor = .lightGray
             self.frameEditorButton.isEnabled = false
         }
+    }
+    
+    private func showFrameRateButton() {
+        let attributedString = NSMutableAttributedString(string: "30\nFPS")
+        let range = NSRange(location: attributedString.string.count - 3, length: 3)
+        attributedString.addAttribute(.font, value: UIFont.systemFont(ofSize: 10), range: range)
+
+        self.frameRateButton.setAttributedTitle(attributedString, for: .normal)
+        self.frameRateButton.frame = CGRect(x: (view.frame.width/2) - 25, y: self.frameEditorButton.frame.minY - 150, width: 50, height: 50)
+        self.frameRateButton.backgroundColor = .systemYellow
+        
+        self.frameRateButton.titleLabel?.numberOfLines = 2
+        self.frameRateButton.titleLabel?.lineBreakMode = .byTruncatingTail
+        self.frameRateButton.titleLabel?.textAlignment = .center
+        self.frameRateButton.titleLabel?.font = UIFont.systemFont(ofSize: 20)
+        self.frameRateButton.titleLabel?.adjustsFontSizeToFitWidth = true
+        self.frameRateButton.titleLabel?.minimumScaleFactor = 0.5 // 글꼴 축소 최소 비율
+        
+        self.frameRateButton.layer.borderWidth = 2.0
+        self.frameRateButton.layer.borderColor = UIColor.darkGray.cgColor
+        self.frameRateButton.layer.cornerRadius = self.frameRateButton.frame.width / 2
+        self.frameRateButton.clipsToBounds = true
+        
+        self.view.addSubview(self.frameRateButton)
     }
     
     private func showNormalVideoFromPHPicker(_ provider: NSItemProvider) {
@@ -372,42 +406,12 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         self.navigationItem.leftBarButtonItem?.tintColor = .systemYellow
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "film.fill"), style: .plain, target: self, action: #selector(showVideoPickerView))
         self.navigationItem.rightBarButtonItem?.tintColor = .systemYellow
+
         self.showPlayerController()
         self.showTrimmerController()
-        
         self.showVideoPickerView()
-        
-        self.frameEditorButton.setTitle("Create Image Frames", for: .normal)
-        self.frameEditorButton.setTitleColor(.darkGray, for: .normal)
-        self.frameEditorButton.backgroundColor = .lightGray
-        self.frameEditorButton.frame = CGRect(x: self.view.safeAreaInsets.left, y: view.frame.height - 100, width: self.view.frame.width, height: 100)
-        self.frameEditorButton.isEnabled = false
-        self.frameEditorButton.addTarget(self, action: #selector(showFrameEditorViewController), for: .touchUpInside)
-        self.view.addSubview(self.frameEditorButton)
-        
-        
-        let attributedString = NSMutableAttributedString(string: "30\nFPS")
-        let range = NSRange(location: attributedString.string.count - 3, length: 3)
-        attributedString.addAttribute(.font, value: UIFont.systemFont(ofSize: 10), range: range)
-
-        self.frameRateButton.setAttributedTitle(attributedString, for: .normal)
-        self.frameRateButton.frame = CGRect(x: (view.frame.width/2) - 25, y: self.frameEditorButton.frame.minY - 150, width: 50, height: 50)
-        self.frameRateButton.backgroundColor = .systemYellow
-        
-        self.frameRateButton.titleLabel?.numberOfLines = 2
-        self.frameRateButton.titleLabel?.lineBreakMode = .byTruncatingTail
-        self.frameRateButton.titleLabel?.textAlignment = .center
-        self.frameRateButton.titleLabel?.font = UIFont.systemFont(ofSize: 20)
-        self.frameRateButton.titleLabel?.adjustsFontSizeToFitWidth = true
-        self.frameRateButton.titleLabel?.minimumScaleFactor = 0.5 // 글꼴 축소 최소 비율
-        
-        self.frameRateButton.layer.borderWidth = 2.0
-        self.frameRateButton.layer.borderColor = UIColor.black.cgColor
-        self.frameRateButton.layer.cornerRadius = self.frameRateButton.frame.width / 2
-        self.frameRateButton.clipsToBounds = true
-        
-        
-        self.view.addSubview(self.frameRateButton)
+        self.showFrameEditorButton()
+        self.showFrameRateButton()
     }
     
 
