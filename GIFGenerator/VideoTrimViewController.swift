@@ -24,12 +24,12 @@ extension CMTime {
 
 extension DDThumbnailMaker {
     var fullRange: CMTimeRange {
-        return CMTimeRange(start: .zero, duration: (self.duration != nil) ? self.duration : .zero)
+        return CMTimeRange(start: .zero, duration: (self.videoInfo.duration != nil) ? self.videoInfo.duration : .zero)
     }
     func trimmedComposition(_ range: CMTimeRange) async -> AVAsset {
         guard CMTimeRangeEqual(fullRange, range) == false else {return self.avAsset}
 
-        let preferredTransform = try! await self.videoTracks.first!.load(.preferredTransform)
+        let preferredTransform = try! await self.videoInfo.videoTracks.first!.load(.preferredTransform)
         let composition = AVMutableComposition()
         try? await composition.insertTimeRange(range, of: self.avAsset, at: .zero)
         
@@ -208,7 +208,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
             trimmer.heightAnchor.constraint(equalToConstant: 50),
         ])
         trimmer.stopPanningcompletion = { [self] in
-            let availableDurationSec = DeviceInfo.availableDurationSec(frameRate: thumbnailMaker.frameRate)
+            let availableDurationSec = DeviceInfo.availableDurationSec(frameRate: thumbnailMaker.videoInfo.frameRate)
             trimmer.thumbView.updateColor(color: trimmer.selectedRange.duration.seconds <= availableDurationSec ? UIColor.systemYellow : UIColor.darkGray)
             updateFrameEditorButton()
         }
@@ -256,7 +256,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
         trimmer.asset = asset
         updateThumbnailMaker()
         
-        let availableDurationSec = min(DeviceInfo.availableDurationSec(frameRate: thumbnailMaker.frameRate), trimmer.selectedRange.end.seconds)
+        let availableDurationSec = min(DeviceInfo.availableDurationSec(frameRate: thumbnailMaker.videoInfo.frameRate), trimmer.selectedRange.end.seconds)
         trimmer.selectedRange = CMTimeRange(start: .zero, end: CMTime(seconds: Double(availableDurationSec), preferredTimescale: CMTimeScale(NSEC_PER_MSEC)))
         trimmer.thumbView.updateColor(color: trimmer.selectedRange.duration.seconds <= availableDurationSec ? UIColor.systemYellow : UIColor.darkGray)
         
@@ -293,7 +293,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
     }
     
     private func updateFrameEditorButton() {
-        let availableDurationSec = DeviceInfo.availableDurationSec(frameRate: thumbnailMaker.frameRate)
+        let availableDurationSec = DeviceInfo.availableDurationSec(frameRate: thumbnailMaker.videoInfo.frameRate)
         if trimmer.selectedRange.duration.seconds <= availableDurationSec {
             self.frameEditorButton.backgroundColor = .systemYellow
             self.frameEditorButton.setTitleColor(.black, for: .normal)
@@ -343,7 +343,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
                         self.updatePlayerController(url)
                         self.updateTrimmerController()
                         self.updateFrameEditorButton()
-                        self.updateTargetFrameRate(self.thumbnailMaker.frameRate)
+                        self.updateTargetFrameRate(self.thumbnailMaker.videoInfo.frameRate)
                     }
                     LoadingIndicator.hideLoading()
                 }
@@ -380,7 +380,7 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
                                         self.updatePlayerController(destinationURL)
                                         self.updateTrimmerController()
                                         self.updateFrameEditorButton()
-                                        self.updateTargetFrameRate(self.thumbnailMaker.frameRate)
+                                        self.updateTargetFrameRate(self.thumbnailMaker.videoInfo.frameRate)
                                         LoadingIndicator.hideLoading()
                                     }
                                 }
