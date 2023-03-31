@@ -150,9 +150,9 @@ class VideoTrimViewController: UIViewController, PHPickerViewControllerDelegate 
                 }
             },
             completion: {
+                LoadingIndicator.hideLoading()
                 let rootVC = FrameEditorViewController(uIImageFrame)
                 self.navigationController?.pushViewController(rootVC, animated: true)
-                LoadingIndicator.hideLoading()
         })
     }
     

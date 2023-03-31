@@ -16,6 +16,7 @@ class FrameEditorViewController: UIViewController {
     private let playPauseButton = UIButton()
 
     @objc private func showOutputGifViewController() {
+        LoadingIndicator.showLoading()
         let documentsDirectoryURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         let gifFilePath: URL! = documentsDirectoryURL.appendingPathComponent("test.gif")
         
@@ -36,7 +37,7 @@ class FrameEditorViewController: UIViewController {
                 let uiImage = UIImage(cgImage: cgImage)
                 frames.append(uiImage)
             }
-
+            LoadingIndicator.hideLoading()
             let animation = UIImage.animatedImage(with: frames, duration: TimeInterval(frameCount) / 10.0)
             let rootVC = OutputGifViewController(animation!)
             self.navigationController?.pushViewController(rootVC, animated: true)
