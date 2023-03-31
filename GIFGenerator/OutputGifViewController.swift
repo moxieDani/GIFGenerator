@@ -27,8 +27,6 @@ class OutputGifViewController: UIViewController {
         self.view.backgroundColor = .systemGray
         
         self.navigationController?.navigationBar.tintColor = .systemYellow
-        self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "xmark"), style: .plain, target: self, action: nil)
-        self.navigationItem.rightBarButtonItem?.tintColor = .systemYellow
                
         self.imageView.frame = CGRect(x: self.view.safeAreaInsets.left,
                                       y: (self.navigationController?.navigationBar.frame.maxY)!,
