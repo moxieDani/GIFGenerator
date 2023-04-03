@@ -56,7 +56,7 @@ class FrameEditorViewController: UIViewController {
         var ret: UIImage! = nil
         
         if let image = UIImage(systemName: imageView.layer.speed == 1.0 ? "pause.fill" : "play.fill") {
-            let newImage = image.withTintColor(.white)
+            let newImage = image.withTintColor(.black)
             let newWidth = newImage.size.width
             let newHeight = newImage.size.height
             let newSize = CGSize(width: newWidth, height: newHeight)
@@ -120,11 +120,11 @@ class FrameEditorViewController: UIViewController {
         self.imageView.animationDuration = TimeInterval(self.imageFrames.count) / 10.0
         self.imageView.startAnimating()
         
-        self.playPauseButton.frame = CGRect(x: self.view.frame.width/2 - 20,
-                                              y: self.imageView.frame.height + (self.navigationController?.navigationBar.frame.maxY)! + 10,
+        self.playPauseButton.frame = CGRect(x: self.view.frame.width/2 - 80,
+                                              y: self.view.frame.height - 60,
                                               width: 40,
                                               height: 40)
-        self.playPauseButton.backgroundColor = .darkGray
+        self.playPauseButton.backgroundColor = .systemYellow
         self.playPauseButton.layer.cornerRadius = 20
         self.playPauseButton.clipsToBounds = true
         self.playPauseButton.setImage(self.getPlayPauseImage(), for: .normal)
