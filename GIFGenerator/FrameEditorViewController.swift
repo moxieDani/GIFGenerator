@@ -27,7 +27,7 @@ class FrameEditorViewController: UIViewController {
                 self.frameRateButton.setAttributedTitle(attributedString, for: .normal)
             }
             
-            if self.thumbnailMaker != nil {
+            if self.thumbnailMaker != nil && self.thumbnailMaker.targetFrameRate != targetFrameRate {
                 let availableDurationSec = DeviceInfo.availableDurationSec(frameRate: targetFrameRate)
                 self.thumbnailMaker.targetFrameRate = targetFrameRate
                 self.thumbnailMaker.targetDuration = CMTimeRange(start: self.thumbnailMaker.targetDuration.start,
