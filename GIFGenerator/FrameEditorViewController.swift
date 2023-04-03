@@ -15,6 +15,7 @@ class FrameEditorViewController: UIViewController {
     private var imageFrames = [UIImage]()
     private let imageView = UIImageView()
     private let playPauseButton = UIButton()
+    private let playModeButton = UIButton()
     private let frameRateButton = UIButton()
     private let availableFrameRates = [5, 10, 15, 20, 24, 25, 30, 60]
     private var targetFrameRate: Float! = 0 {
@@ -64,6 +65,21 @@ class FrameEditorViewController: UIViewController {
             image = UIImage(systemName: "pause.fill")
         }
         self.playPauseButton.setImage(image, for: .normal)
+    }
+    
+    @objc private func pressPlayModeButton() {
+        var image: UIImage! = nil
+        if self.playModeButton.tag == 0 {
+            image = UIImage(systemName: "arrow.left")
+            self.playModeButton.tag = 1
+        } else if self.playModeButton.tag == 1 {
+            image = UIImage(systemName: "arrow.left.and.right")
+            self.playModeButton.tag = 2
+        } else {
+            image = UIImage(systemName: "arrow.right")
+            self.playModeButton.tag = 0
+        }
+        self.playModeButton.setImage(image, for: .normal)
     }
     
     @objc func showFrameRateDialogue() {
@@ -177,6 +193,20 @@ class FrameEditorViewController: UIViewController {
         self.navigationController?.navigationBar.tintColor = .systemYellow
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.down.fill"), style: .plain, target: self, action: #selector(showOutputGifViewController))
         self.navigationItem.rightBarButtonItem?.tintColor = .red
+               
+        self.playModeButton.frame = CGRect(x: self.view.frame.width/2 - 95,
+                                              y: self.view.frame.height - 70,
+                                              width: 50,
+                                              height: 50)
+        self.playModeButton.backgroundColor = .systemYellow
+        self.playModeButton.tintColor = .black
+        self.playModeButton.layer.cornerRadius = self.playModeButton.frame.width / 2
+        self.playModeButton.layer.borderWidth = 2.0
+        self.playModeButton.layer.borderColor = UIColor.darkGray.cgColor
+        self.playModeButton.clipsToBounds = true
+        self.playModeButton.setImage(UIImage(systemName: "arrow.right"), for: .normal)
+        self.playModeButton.addTarget(self, action: #selector(pressPlayModeButton), for: .touchUpInside)
+        self.view.addSubview(self.playModeButton)
         
         self.playPauseButton.frame = CGRect(x: self.view.frame.width/2 - 25,
                                               y: self.view.frame.height - 70,
