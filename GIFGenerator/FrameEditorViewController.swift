@@ -54,15 +54,11 @@ class FrameEditorViewController: UIViewController {
     
     @objc private func pressPlayPauseButton() {
         var image: UIImage! = nil
-        if self.imageView.layer.speed > 0.0 {
-            let layer = self.imageView.layer
-            let pausedTime = layer.convertTime(CACurrentMediaTime(), from: nil)
-            layer.speed = 0.0
-            layer.timeOffset = pausedTime
-            image = UIImage(systemName: "play.fill")
+        if self.imageView.layer.speed == 1.0 {
+            self.updatePauseUI()
         } else {
             let pausedTime = self.imageView.layer.timeOffset
-            self.imageView.layer.speed = self.imageFrameDelaySlider.value
+            self.imageView.layer.speed = 1.0
             self.imageView.layer.timeOffset = 0.0
             self.imageView.layer.beginTime = 0.0
             let timeSincePause = self.imageView.layer.convertTime(CACurrentMediaTime(), from: nil) - pausedTime
@@ -118,17 +114,11 @@ class FrameEditorViewController: UIViewController {
     }
     
     @objc func sliderValueChanged(_ sender: UISlider) {
-        let layer = self.imageView.layer
-        let pausedTime = layer.convertTime(CACurrentMediaTime(), from: nil)
-        layer.timeOffset = pausedTime
-        self.imageView.layer.speed = 0.0
-        self.playPauseButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
+        self.updatePauseUI()
     }
     
     @objc func sliderTouchUp(_ sender: UISlider) {
-        self.imageView.layer.speed = sender.value
-        self.imageView.layer.timeOffset = 0.0
-        self.playPauseButton.setImage(UIImage(systemName: "pause.fill"), for: .normal)
+        self.updatePlayUI()
     }
     
     init(_ thumbnailMaker: DDThumbnailMaker) {
@@ -138,6 +128,22 @@ class FrameEditorViewController: UIViewController {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    private func updatePauseUI() {
+        let layer = self.imageView.layer
+        let pausedTime = layer.convertTime(CACurrentMediaTime(), from: nil)
+        layer.timeOffset = pausedTime
+        self.imageView.layer.speed = 0.0
+        self.playPauseButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
+    }
+    
+    private func updatePlayUI() {
+        self.imageView.layer.speed = 1.0
+        self.imageView.layer.timeOffset = 0.0
+        self.imageView.animationDuration = TimeInterval(sender.value)
+        self.imageView.startAnimating()
+        self.playPauseButton.setImage(UIImage(systemName: "pause.fill"), for: .normal)
     }
     
     private func generateGifFrameImages(thumbnailMaker: DDThumbnailMaker) {
@@ -158,8 +164,9 @@ class FrameEditorViewController: UIViewController {
             },
             completion: {
                 self.thumbnailMaker = thumbnailMaker
+                self.imageFrameDelaySlider.value = Float(imageFrames.count) / Float(thumbnailMaker.targetFrameRate)
                 self.imageView.animationImages = imageFrames
-                self.imageView.animationDuration = Double(imageFrames.count) / Double(thumbnailMaker.targetFrameRate)
+                self.imageView.animationDuration = TimeInterval(self.imageFrameDelaySlider.value)
                 self.imageView.startAnimating()
                 self.imageFrames = imageFrames
                 LoadingIndicator.hideLoading()
@@ -262,15 +269,31 @@ class FrameEditorViewController: UIViewController {
         self.view.addSubview(self.frameRateButton)
         
         self.imageFrameDelaySlider.frame = CGRect(x: 50, y: self.frameRateButton.frame.minY - 50, width: self.view.frame.width - 100, height: 30)
-        self.imageFrameDelaySlider.minimumValue = 1.00
-        self.imageFrameDelaySlider.maximumValue = 2.50
-        self.imageFrameDelaySlider.value = 1.00
+        self.imageFrameDelaySlider.minimumValue = 0.30
+        self.imageFrameDelaySlider.maximumValue = 10.00
+        self.imageFrameDelaySlider.value = self.imageFrameDelaySlider.minimumValue
         self.imageFrameDelaySlider.addTarget(self, action: #selector(sliderValueChanged(_:)), for: .valueChanged)
         self.imageFrameDelaySlider.addTarget(self, action: #selector(sliderTouchUp(_:)), for: .touchUpInside)
         self.imageFrameDelaySlider.minimumTrackTintColor = .darkGray
         self.imageFrameDelaySlider.maximumTrackTintColor = .darkGray
         self.imageFrameDelaySlider.thumbTintColor = .systemYellow
         self.view.addSubview(self.imageFrameDelaySlider)
+        
+        self.imageFrameDelayUpButton.frame = CGRect(x: self.imageFrameDelaySlider.frame.minX - 50,
+                                                    y: self.imageFrameDelaySlider.frame.minY - 10,
+                                                    width: 50,
+                                                    height: 50)
+        self.imageFrameDelayUpButton.backgroundColor = .systemGray
+        self.imageFrameDelayUpButton.setImage(UIImage(systemName: "tortoise.fill"), for: .normal)
+        self.view.addSubview(self.imageFrameDelayUpButton)
+        
+        self.imageFrameDelayDownButton.frame = CGRect(x: self.imageFrameDelaySlider.frame.maxX,
+                                                    y: self.imageFrameDelaySlider.frame.minY - 10,
+                                                    width: 50,
+                                                    height: 50)
+        self.imageFrameDelayDownButton.backgroundColor = .systemGray
+        self.imageFrameDelayDownButton.setImage(UIImage(systemName: "hare.fill"), for: .normal)
+        self.view.addSubview(self.imageFrameDelayDownButton)
     }
     
 
