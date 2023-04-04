@@ -17,6 +17,11 @@ class FrameEditorViewController: UIViewController {
     private let playPauseButton = UIButton()
     private let playModeButton = UIButton()
     private let frameRateButton = UIButton()
+    private let imageFrameDelaySlider = UISlider()
+    private let imageFrameDelayUpButton = UIButton()
+    private let imageFrameDelayDownButton = UIButton()
+    private var imageFrameDelay: Double! = 0.0
+    
     private let availableFrameRates = [5, 10, 15, 20, 24, 25, 30, 60]
     private var targetFrameRate: Float! = 0 {
         didSet {
@@ -49,7 +54,7 @@ class FrameEditorViewController: UIViewController {
     
     @objc private func pressPlayPauseButton() {
         var image: UIImage! = nil
-        if self.imageView.layer.speed == 1.0 {
+        if self.imageView.layer.speed > 0.0 {
             let layer = self.imageView.layer
             let pausedTime = layer.convertTime(CACurrentMediaTime(), from: nil)
             layer.speed = 0.0
@@ -57,7 +62,7 @@ class FrameEditorViewController: UIViewController {
             image = UIImage(systemName: "play.fill")
         } else {
             let pausedTime = self.imageView.layer.timeOffset
-            self.imageView.layer.speed = 1.0
+            self.imageView.layer.speed = self.imageFrameDelaySlider.value
             self.imageView.layer.timeOffset = 0.0
             self.imageView.layer.beginTime = 0.0
             let timeSincePause = self.imageView.layer.convertTime(CACurrentMediaTime(), from: nil) - pausedTime
@@ -112,6 +117,20 @@ class FrameEditorViewController: UIViewController {
         present(alertController, animated: true, completion: nil)
     }
     
+    @objc func sliderValueChanged(_ sender: UISlider) {
+        let layer = self.imageView.layer
+        let pausedTime = layer.convertTime(CACurrentMediaTime(), from: nil)
+        layer.timeOffset = pausedTime
+        self.imageView.layer.speed = 0.0
+        self.playPauseButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
+    }
+    
+    @objc func sliderTouchUp(_ sender: UISlider) {
+        self.imageView.layer.speed = sender.value
+        self.imageView.layer.timeOffset = 0.0
+        self.playPauseButton.setImage(UIImage(systemName: "pause.fill"), for: .normal)
+    }
+    
     init(_ thumbnailMaker: DDThumbnailMaker) {
         super.init(nibName: nil, bundle: nil)
         self.generateGifFrameImages(thumbnailMaker: thumbnailMaker)
@@ -123,6 +142,10 @@ class FrameEditorViewController: UIViewController {
     
     private func generateGifFrameImages(thumbnailMaker: DDThumbnailMaker) {
         LoadingIndicator.showLoading()
+        if self.targetFrameRate == 0 {
+            self.targetFrameRate = thumbnailMaker.targetFrameRate
+        }
+        
         var append_count = 0
         let maximumNumberOfImageFrame = DeviceInfo.getMaximumNumberOfImageFrame()
         var imageFrames = [UIImage]()
@@ -134,22 +157,10 @@ class FrameEditorViewController: UIViewController {
                 }
             },
             completion: {
-                if self.targetFrameRate == 0 {
-                    self.targetFrameRate = thumbnailMaker.targetFrameRate
-                }
                 self.thumbnailMaker = thumbnailMaker
-                
-                self.imageView.frame = CGRect(x: self.view.safeAreaInsets.left,
-                                              y: (self.navigationController?.navigationBar.frame.maxY)!,
-                                              width: self.view.frame.width,
-                                              height: self.view.frame.height * 0.5)
-                self.imageView.backgroundColor = .black
-                self.imageView.contentMode = .scaleAspectFit
-                self.view.addSubview(self.imageView)
                 self.imageView.animationImages = imageFrames
-                self.imageView.animationDuration = TimeInterval(self.imageFrames.count) / 10.0
+                self.imageView.animationDuration = Double(imageFrames.count) / Double(thumbnailMaker.targetFrameRate)
                 self.imageView.startAnimating()
-                
                 self.imageFrames = imageFrames
                 LoadingIndicator.hideLoading()
         })
@@ -194,6 +205,14 @@ class FrameEditorViewController: UIViewController {
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.down.fill"), style: .plain, target: self, action: #selector(showOutputGifViewController))
         self.navigationItem.rightBarButtonItem?.tintColor = .red
                
+        self.imageView.frame = CGRect(x: self.view.safeAreaInsets.left,
+                                      y: (self.navigationController?.navigationBar.frame.maxY)!,
+                                      width: self.view.frame.width,
+                                      height: self.view.frame.height * 0.5)
+        self.imageView.backgroundColor = .black
+        self.imageView.contentMode = .scaleAspectFit
+        self.view.addSubview(self.imageView)
+        
         self.playModeButton.frame = CGRect(x: self.view.frame.width/2 - 95,
                                               y: self.view.frame.height - 70,
                                               width: 50,
@@ -241,6 +260,17 @@ class FrameEditorViewController: UIViewController {
         self.frameRateButton.layer.borderColor = UIColor.darkGray.cgColor
         self.frameRateButton.addTarget(self, action: #selector(showFrameRateDialogue), for: .touchUpInside)
         self.view.addSubview(self.frameRateButton)
+        
+        self.imageFrameDelaySlider.frame = CGRect(x: 50, y: self.frameRateButton.frame.minY - 50, width: self.view.frame.width - 100, height: 30)
+        self.imageFrameDelaySlider.minimumValue = 1.00
+        self.imageFrameDelaySlider.maximumValue = 2.50
+        self.imageFrameDelaySlider.value = 1.00
+        self.imageFrameDelaySlider.addTarget(self, action: #selector(sliderValueChanged(_:)), for: .valueChanged)
+        self.imageFrameDelaySlider.addTarget(self, action: #selector(sliderTouchUp(_:)), for: .touchUpInside)
+        self.imageFrameDelaySlider.minimumTrackTintColor = .darkGray
+        self.imageFrameDelaySlider.maximumTrackTintColor = .darkGray
+        self.imageFrameDelaySlider.thumbTintColor = .systemYellow
+        self.view.addSubview(self.imageFrameDelaySlider)
     }
     
 
