@@ -113,6 +113,16 @@ class FrameEditorViewController: UIViewController {
         self.updatePlayUI(animate: true)
     }
     
+    @objc func sliderValueUp(_ sender: UISlider) {
+        self.imageFrameDelaySlider.value += 0.1
+        self.updatePlayUI(animate:true)
+    }
+    
+    @objc func sliderValueDown(_ sender: UISlider) {
+        self.imageFrameDelaySlider.value -= 0.1
+        self.updatePlayUI(animate:true)
+    }
+    
     init(_ thumbnailMaker: DDThumbnailMaker) {
         super.init(nibName: nil, bundle: nil)
         self.generateGifFrameImages(thumbnailMaker: thumbnailMaker)
@@ -283,7 +293,9 @@ class FrameEditorViewController: UIViewController {
                                                     width: 50,
                                                     height: 50)
         self.imageFrameDelayUpButton.backgroundColor = .systemGray
-        self.imageFrameDelayUpButton.setImage(UIImage(systemName: "tortoise.fill"), for: .normal)
+        self.imageFrameDelayUpButton.tintColor = .systemYellow
+        self.imageFrameDelayUpButton.setImage(UIImage(systemName: "hare.fill"), for: .normal)
+        self.imageFrameDelayUpButton.addTarget(self, action: #selector(sliderValueDown(_:)), for: .touchUpInside)
         self.view.addSubview(self.imageFrameDelayUpButton)
         
         self.imageFrameDelayDownButton.frame = CGRect(x: self.imageFrameDelaySlider.frame.maxX,
@@ -291,7 +303,9 @@ class FrameEditorViewController: UIViewController {
                                                     width: 50,
                                                     height: 50)
         self.imageFrameDelayDownButton.backgroundColor = .systemGray
-        self.imageFrameDelayDownButton.setImage(UIImage(systemName: "hare.fill"), for: .normal)
+        self.imageFrameDelayDownButton.tintColor = .systemYellow
+        self.imageFrameDelayDownButton.setImage(UIImage(systemName: "tortoise.fill"), for: .normal)
+        self.imageFrameDelayDownButton.addTarget(self, action: #selector(sliderValueUp(_:)), for: .touchUpInside)
         self.view.addSubview(self.imageFrameDelayDownButton)
     }
     
