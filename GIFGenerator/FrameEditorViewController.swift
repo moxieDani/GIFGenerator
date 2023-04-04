@@ -53,19 +53,11 @@ class FrameEditorViewController: UIViewController {
     }
     
     @objc private func pressPlayPauseButton() {
-        var image: UIImage! = nil
         if self.imageView.layer.speed == 1.0 {
             self.updatePauseUI()
         } else {
-            let pausedTime = self.imageView.layer.timeOffset
-            self.imageView.layer.speed = 1.0
-            self.imageView.layer.timeOffset = 0.0
-            self.imageView.layer.beginTime = 0.0
-            let timeSincePause = self.imageView.layer.convertTime(CACurrentMediaTime(), from: nil) - pausedTime
-            self.imageView.layer.beginTime = timeSincePause
-            image = UIImage(systemName: "pause.fill")
+            self.updatePlayUI(animate: false)
         }
-        self.playPauseButton.setImage(image, for: .normal)
     }
     
     @objc private func pressPlayModeButton() {
@@ -118,7 +110,7 @@ class FrameEditorViewController: UIViewController {
     }
     
     @objc func sliderTouchUp(_ sender: UISlider) {
-        self.updatePlayUI()
+        self.updatePlayUI(animate: true)
     }
     
     init(_ thumbnailMaker: DDThumbnailMaker) {
@@ -138,12 +130,19 @@ class FrameEditorViewController: UIViewController {
         self.playPauseButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
     }
     
-    private func updatePlayUI() {
+    private func updatePlayUI(animate:Bool) {
+        let pausedTime = self.imageView.layer.timeOffset
         self.imageView.layer.speed = 1.0
         self.imageView.layer.timeOffset = 0.0
-        self.imageView.animationDuration = TimeInterval(sender.value)
-        self.imageView.startAnimating()
+        self.imageView.layer.beginTime = 0.0
+        let timeSincePause = self.imageView.layer.convertTime(CACurrentMediaTime(), from: nil) - pausedTime
+        self.imageView.layer.beginTime = timeSincePause
         self.playPauseButton.setImage(UIImage(systemName: "pause.fill"), for: .normal)
+
+        if animate {
+            self.imageView.animationDuration = TimeInterval(self.imageFrameDelaySlider.value)
+            self.imageView.startAnimating()
+        }
     }
     
     private func generateGifFrameImages(thumbnailMaker: DDThumbnailMaker) {
