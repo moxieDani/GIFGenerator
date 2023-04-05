@@ -37,7 +37,7 @@ class FrameEditorViewController: UIViewController {
                 self.thumbnailMaker.targetFrameRate = targetFrameRate
                 self.thumbnailMaker.targetDuration = CMTimeRange(start: self.thumbnailMaker.targetDuration.start,
                                                                  end: CMTime(seconds: availableDurationSec, preferredTimescale: CMTimeScale(NSEC_PER_MSEC)))
-                self.generateGifFrameImages(thumbnailMaker: self.thumbnailMaker)
+                self.generateGifFrameImages()
             }
         }
     }
@@ -61,18 +61,9 @@ class FrameEditorViewController: UIViewController {
     }
     
     @objc private func pressPlayModeButton() {
-        var image: UIImage! = nil
-        if self.playModeButton.tag == 0 {
-            image = UIImage(systemName: "arrow.left")
-            self.playModeButton.tag = 1
-        } else if self.playModeButton.tag == 1 {
-            image = UIImage(systemName: "arrow.left.and.right")
-            self.playModeButton.tag = 2
-        } else {
-            image = UIImage(systemName: "arrow.right")
-            self.playModeButton.tag = 0
-        }
-        self.playModeButton.setImage(image, for: .normal)
+        self.playModeButton.tag = (self.playModeButton.tag + 1) % 3
+        self.updatePlayModeUI()
+        self.playAnimation()
     }
     
     @objc func showFrameRateDialogue() {
@@ -125,11 +116,45 @@ class FrameEditorViewController: UIViewController {
     
     init(_ thumbnailMaker: DDThumbnailMaker) {
         super.init(nibName: nil, bundle: nil)
-        self.generateGifFrameImages(thumbnailMaker: thumbnailMaker)
+        self.thumbnailMaker = thumbnailMaker
+        self.generateGifFrameImages()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    private func getArrangedImageFrames() -> [UIImage] {
+        var ret = [UIImage]()
+        
+        if self.playModeButton.tag == 0 {
+            ret = self.imageFrames
+        } else if self.playModeButton.tag == 1 {
+            ret = self.imageFrames.reversed()
+        } else {
+            var even = [UIImage]()
+            
+            for i in 0..<self.imageFrames.count {
+                if i%2 == 0 {
+                    ret.append(self.imageFrames[i])
+                } else {
+                    even.append(self.imageFrames[i])
+                }
+            }
+            ret.append(contentsOf: even.reversed())
+        }
+        
+        return ret
+    }
+    
+    private func playAnimation() {
+        self.imageView.stopAnimating()
+        if self.imageView.animationImages == nil {
+            self.imageFrameDelaySlider.value = Float(self.imageFrames.count) / Float(self.targetFrameRate)
+        }
+        self.imageView.animationImages = self.getArrangedImageFrames()
+        self.imageView.animationDuration = TimeInterval(self.imageFrameDelaySlider.value)
+        self.imageView.startAnimating()
     }
     
     private func updatePauseUI() {
@@ -150,21 +175,33 @@ class FrameEditorViewController: UIViewController {
         self.playPauseButton.setImage(UIImage(systemName: "pause.fill"), for: .normal)
 
         if animate {
-            self.imageView.animationDuration = TimeInterval(self.imageFrameDelaySlider.value)
-            self.imageView.startAnimating()
+            self.playAnimation()
         }
     }
     
-    private func generateGifFrameImages(thumbnailMaker: DDThumbnailMaker) {
+    private func updatePlayModeUI() {
+        var image = UIImage()
+        if self.playModeButton.tag == 0 {
+            image = UIImage(systemName: "arrow.right")!
+        } else if self.playModeButton.tag == 1 {
+            image = UIImage(systemName: "arrow.left")!
+        } else {
+            image = UIImage(systemName: "arrow.left.and.right")!
+        }
+        
+        self.playModeButton.setImage(image, for: .normal)
+    }
+    
+    private func generateGifFrameImages() {
         LoadingIndicator.showLoading()
         if self.targetFrameRate == 0 {
-            self.targetFrameRate = thumbnailMaker.targetFrameRate
+            self.targetFrameRate = self.thumbnailMaker.targetFrameRate
         }
         
         var append_count = 0
         let maximumNumberOfImageFrame = DeviceInfo.getMaximumNumberOfImageFrame()
         var imageFrames = [UIImage]()
-        thumbnailMaker.generate(
+        self.thumbnailMaker.generate(
             imageHandler:{requestedTime, image, actualTime, result, error in
                 if result == .succeeded && maximumNumberOfImageFrame > append_count {
                     imageFrames.append(UIImage(cgImage: image!))
@@ -172,12 +209,9 @@ class FrameEditorViewController: UIViewController {
                 }
             },
             completion: {
-                self.thumbnailMaker = thumbnailMaker
-                self.imageFrameDelaySlider.value = Float(imageFrames.count) / Float(thumbnailMaker.targetFrameRate)
-                self.imageView.animationImages = imageFrames
-                self.imageView.animationDuration = TimeInterval(self.imageFrameDelaySlider.value)
-                self.imageView.startAnimating()
                 self.imageFrames = imageFrames
+                self.updatePlayModeUI()
+                self.playAnimation()
                 LoadingIndicator.hideLoading()
         })
     }
