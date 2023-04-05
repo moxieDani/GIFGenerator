@@ -14,6 +14,7 @@ class FrameEditorViewController: UIViewController {
     private var thumbnailMaker: DDThumbnailMaker! = nil
     private var imageFrames = [UIImage]()
     private let imageView = UIImageView()
+    private var imageViewLabel = UILabel()
     private let playPauseButton = UIButton()
     private let playModeButton = UIButton()
     private let frameRateButton = UIButton()
@@ -37,7 +38,7 @@ class FrameEditorViewController: UIViewController {
                 self.thumbnailMaker.targetFrameRate = targetFrameRate
                 self.thumbnailMaker.targetDuration = CMTimeRange(start: self.thumbnailMaker.targetDuration.start,
                                                                  end: CMTime(seconds: availableDurationSec, preferredTimescale: CMTimeScale(NSEC_PER_MSEC)))
-                self.generateGifFrameImages(thumbnailMaker: self.thumbnailMaker)
+                self.generateGifFrameImages()
             }
         }
     }
@@ -47,8 +48,9 @@ class FrameEditorViewController: UIViewController {
         let gifFilePath: URL! = documentsDirectoryURL.appendingPathComponent("test.gif")
         
         // Generate GIF file
+        let frameDelayTime = self.imageFrameDelaySlider.value / Float(self.imageFrames.count)
         self.generateGif(filePath: gifFilePath)
-        let rootVC = OutputGifViewController(gifFilePath!)
+        let rootVC = OutputGifViewController(gifFilePath!, frameDelayTime)
         self.navigationController?.pushViewController(rootVC, animated: true)
     }
     
@@ -61,18 +63,9 @@ class FrameEditorViewController: UIViewController {
     }
     
     @objc private func pressPlayModeButton() {
-        var image: UIImage! = nil
-        if self.playModeButton.tag == 0 {
-            image = UIImage(systemName: "arrow.left")
-            self.playModeButton.tag = 1
-        } else if self.playModeButton.tag == 1 {
-            image = UIImage(systemName: "arrow.left.and.right")
-            self.playModeButton.tag = 2
-        } else {
-            image = UIImage(systemName: "arrow.right")
-            self.playModeButton.tag = 0
-        }
-        self.playModeButton.setImage(image, for: .normal)
+        self.playModeButton.tag = (self.playModeButton.tag + 1) % 3
+        self.updatePlayModeUI()
+        self.playAnimation()
     }
     
     @objc func showFrameRateDialogue() {
@@ -106,30 +99,83 @@ class FrameEditorViewController: UIViewController {
     }
     
     @objc func sliderValueChanged(_ sender: UISlider) {
+        self.updateImageViewLabel(string: "\(round((self.imageFrameDelaySlider.value) * 100) / 100) Sec")
         self.updatePauseUI()
     }
     
     @objc func sliderTouchUp(_ sender: UISlider) {
+        self.updateImageViewLabel(string: "\(round((self.imageFrameDelaySlider.value) * 100) / 100) Sec")
         self.updatePlayUI(animate: true)
     }
     
     @objc func sliderValueUp(_ sender: UISlider) {
         self.imageFrameDelaySlider.value += 0.1
+        self.updateImageViewLabel(string: "\(round((self.imageFrameDelaySlider.value) * 100) / 100) Sec")
         self.updatePlayUI(animate:true)
     }
     
     @objc func sliderValueDown(_ sender: UISlider) {
         self.imageFrameDelaySlider.value -= 0.1
+        self.updateImageViewLabel(string: "\(round((self.imageFrameDelaySlider.value) * 100) / 100) Sec")
         self.updatePlayUI(animate:true)
     }
     
     init(_ thumbnailMaker: DDThumbnailMaker) {
         super.init(nibName: nil, bundle: nil)
-        self.generateGifFrameImages(thumbnailMaker: thumbnailMaker)
+        self.thumbnailMaker = thumbnailMaker
+        self.generateGifFrameImages()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    private func updateImageViewLabel(string:String) {
+        let attributedString = NSMutableAttributedString(string: string)
+        let strokeAttributes: [NSAttributedString.Key: Any] = [
+            .strokeColor: UIColor.darkGray,
+            .strokeWidth: -0.65
+        ]
+        attributedString.addAttributes(strokeAttributes, range: NSRange(location: 0, length: string.count))
+        self.imageViewLabel.attributedText = attributedString
+
+        self.imageViewLabel.alpha = 1.0
+        UIView.animate(withDuration: 1.2, animations: {
+            self.imageViewLabel.alpha = 0.0
+        })
+    }
+    
+    private func getArrangedImageFrames() -> [UIImage] {
+        var ret = [UIImage]()
+        
+        if self.playModeButton.tag == 0 {
+            ret = self.imageFrames
+        } else if self.playModeButton.tag == 1 {
+            ret = self.imageFrames.reversed()
+        } else {
+            var even = [UIImage]()
+            
+            for i in 0..<self.imageFrames.count {
+                if i%2 == 0 {
+                    ret.append(self.imageFrames[i])
+                } else {
+                    even.append(self.imageFrames[i])
+                }
+            }
+            ret.append(contentsOf: even.reversed())
+        }
+        
+        return ret
+    }
+    
+    private func playAnimation() {
+        self.imageView.stopAnimating()
+        if self.imageView.animationImages == nil {
+            self.imageFrameDelaySlider.value = Float(self.imageFrames.count) / Float(self.targetFrameRate)
+        }
+        self.imageView.animationImages = self.getArrangedImageFrames()
+        self.imageView.animationDuration = TimeInterval(self.imageFrameDelaySlider.value)
+        self.imageView.startAnimating()
     }
     
     private func updatePauseUI() {
@@ -150,21 +196,41 @@ class FrameEditorViewController: UIViewController {
         self.playPauseButton.setImage(UIImage(systemName: "pause.fill"), for: .normal)
 
         if animate {
-            self.imageView.animationDuration = TimeInterval(self.imageFrameDelaySlider.value)
-            self.imageView.startAnimating()
+            self.playAnimation()
         }
     }
     
-    private func generateGifFrameImages(thumbnailMaker: DDThumbnailMaker) {
+    private func updatePlayModeUI() {
+        var image = UIImage()
+        var mode = ""
+        
+        if self.playModeButton.tag == 0 {
+            image = UIImage(systemName: "arrow.right")!
+            mode = "Forward"
+        } else if self.playModeButton.tag == 1 {
+            image = UIImage(systemName: "arrow.left")!
+            mode = "Backward"
+        } else {
+            image = UIImage(systemName: "arrow.left.and.right")!
+            mode = "Forward & Backward"
+        }
+        self.playModeButton.setImage(image, for: .normal)
+        
+        if self.imageView.animationImages != nil {
+            self.updateImageViewLabel(string: mode)
+        }
+    }
+    
+    private func generateGifFrameImages() {
         LoadingIndicator.showLoading()
         if self.targetFrameRate == 0 {
-            self.targetFrameRate = thumbnailMaker.targetFrameRate
+            self.targetFrameRate = self.thumbnailMaker.targetFrameRate
         }
         
         var append_count = 0
         let maximumNumberOfImageFrame = DeviceInfo.getMaximumNumberOfImageFrame()
         var imageFrames = [UIImage]()
-        thumbnailMaker.generate(
+        self.thumbnailMaker.generate(
             imageHandler:{requestedTime, image, actualTime, result, error in
                 if result == .succeeded && maximumNumberOfImageFrame > append_count {
                     imageFrames.append(UIImage(cgImage: image!))
@@ -172,19 +238,17 @@ class FrameEditorViewController: UIViewController {
                 }
             },
             completion: {
-                self.thumbnailMaker = thumbnailMaker
-                self.imageFrameDelaySlider.value = Float(imageFrames.count) / Float(thumbnailMaker.targetFrameRate)
-                self.imageView.animationImages = imageFrames
-                self.imageView.animationDuration = TimeInterval(self.imageFrameDelaySlider.value)
-                self.imageView.startAnimating()
                 self.imageFrames = imageFrames
+                self.updatePlayModeUI()
+                self.playAnimation()
                 LoadingIndicator.hideLoading()
         })
     }
     
     private func generateGif(filePath: URL) {
+        let frameDelayTime = self.imageFrameDelaySlider.value / Float(self.imageFrames.count)
         let fileProperties: CFDictionary = [kCGImagePropertyGIFDictionary as String: [kCGImagePropertyGIFLoopCount as String: 0]]  as CFDictionary
-        let frameProperties: CFDictionary = [kCGImagePropertyGIFDictionary as String: [(kCGImagePropertyGIFDelayTime as String): 1.0]] as CFDictionary
+        let frameProperties: CFDictionary = [kCGImagePropertyGIFDictionary as String: [(kCGImagePropertyGIFDelayTime as String): frameDelayTime]] as CFDictionary
         
         do {
             if FileManager.default.fileExists(atPath: filePath.path) {
@@ -194,10 +258,11 @@ class FrameEditorViewController: UIViewController {
             print(error.localizedDescription)
         }
         
+        let images = self.getArrangedImageFrames()
         if let url = filePath as CFURL? {
-            if let destination = CGImageDestinationCreateWithURL(url, UTType.gif.identifier as CFString, self.imageFrames.count, nil) {
+            if let destination = CGImageDestinationCreateWithURL(url, UTType.gif.identifier as CFString, images.count, nil) {
                 CGImageDestinationSetProperties(destination, fileProperties)
-                for image in self.imageFrames {
+                for image in images {
                     autoreleasepool {
                         if let cgImage = image.cgImage {
                             CGImageDestinationAddImage(destination, cgImage, frameProperties)
@@ -221,14 +286,6 @@ class FrameEditorViewController: UIViewController {
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.down.fill"), style: .plain, target: self, action: #selector(showOutputGifViewController))
         self.navigationItem.rightBarButtonItem?.tintColor = .red
                
-        self.imageView.frame = CGRect(x: self.view.safeAreaInsets.left,
-                                      y: (self.navigationController?.navigationBar.frame.maxY)!,
-                                      width: self.view.frame.width,
-                                      height: self.view.frame.height * 0.5)
-        self.imageView.backgroundColor = .black
-        self.imageView.contentMode = .scaleAspectFit
-        self.view.addSubview(self.imageView)
-        
         self.playModeButton.frame = CGRect(x: self.view.frame.width/2 - 95,
                                               y: self.view.frame.height - 70,
                                               width: 50,
@@ -248,7 +305,6 @@ class FrameEditorViewController: UIViewController {
                                               width: 50,
                                               height: 50)
         self.playPauseButton.backgroundColor = .systemYellow
-        self.frameRateButton.titleLabel?.numberOfLines = 2
         self.playPauseButton.tintColor = .black
         self.playPauseButton.layer.cornerRadius = self.playPauseButton.frame.width / 2
         self.playPauseButton.layer.borderWidth = 2.0
@@ -262,6 +318,7 @@ class FrameEditorViewController: UIViewController {
                                               y: self.view.frame.height - 70,
                                               width: 50,
                                               height: 50)
+        self.frameRateButton.titleLabel?.numberOfLines = 2
         self.frameRateButton.backgroundColor = .systemYellow
         self.frameRateButton.layer.cornerRadius = 20
         self.frameRateButton.clipsToBounds = true
@@ -307,6 +364,21 @@ class FrameEditorViewController: UIViewController {
         self.imageFrameDelayDownButton.setImage(UIImage(systemName: "tortoise.fill"), for: .normal)
         self.imageFrameDelayDownButton.addTarget(self, action: #selector(sliderValueUp(_:)), for: .touchUpInside)
         self.view.addSubview(self.imageFrameDelayDownButton)
+        
+        self.imageView.frame = CGRect(x: self.view.safeAreaInsets.left,
+                                      y: (self.navigationController?.navigationBar.frame.maxY)!,
+                                      width: self.view.frame.width,
+                                      height: self.imageFrameDelayDownButton.frame.minY - (self.navigationController?.navigationBar.frame.maxY)!)
+        self.imageView.backgroundColor = .darkGray
+        self.imageView.contentMode = .scaleAspectFit
+        self.view.addSubview(self.imageView)
+        
+        self.imageViewLabel = UILabel(frame: self.imageView.frame)
+        self.imageViewLabel.font = UIFont.systemFont(ofSize: 35)
+        self.imageViewLabel.textColor = .systemYellow
+        self.imageViewLabel.textAlignment = .center
+        self.imageViewLabel.numberOfLines = 2
+        self.view.addSubview(self.imageViewLabel)
     }
     
 

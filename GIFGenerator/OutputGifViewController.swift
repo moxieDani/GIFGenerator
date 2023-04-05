@@ -19,15 +19,14 @@ extension UIImage {
 
 class OutputGifViewController: UIViewController {
     private var gifPath: URL! = nil
+    private var frameDelay: Float! = 0.0
     private let imageView = UIImageView()
     private let shareButton = UIButton()
     
     @objc func shareFile() {
-      // 액티비티 뷰 컨트롤러 만들기
-      let activityViewController = UIActivityViewController(activityItems: [self.gifPath!], applicationActivities: nil)
-
-      // 액티비티 뷰 컨트롤러 표시하기
-      present(activityViewController, animated: true, completion: nil)
+        LoadingIndicator.showLoading()
+        let activityViewController = UIActivityViewController(activityItems: [self.gifPath!], applicationActivities: nil)
+        present(activityViewController, animated: true, completion: { LoadingIndicator.hideLoading() })
     }
     
     private func showShareButton() {
@@ -41,9 +40,10 @@ class OutputGifViewController: UIViewController {
         self.view.addSubview(self.shareButton)
     }
     
-    init(_ gifPath: URL) {
+    init(_ gifPath: URL, _ frameDelay: Float) {
         super.init(nibName: nil, bundle: nil)
         self.gifPath = gifPath
+        self.frameDelay = frameDelay
     }
     
     required init?(coder: NSCoder) {
@@ -84,7 +84,7 @@ class OutputGifViewController: UIViewController {
                 frames.append(uiImage)
             }
 
-            self.imageView.image = UIImage.animatedImage(with: frames, duration: TimeInterval(frameCount) / 10.0)
+            self.imageView.image = UIImage.animatedImage(with: frames, duration: TimeInterval(self.frameDelay * Float(frames.count)))
         }
         
         showShareButton()
