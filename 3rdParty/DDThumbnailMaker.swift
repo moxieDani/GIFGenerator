@@ -9,6 +9,13 @@ import Foundation
 import UIKit
 import AVKit
 
+public struct VideoInfo {
+    public var videoTracks: [AVAssetTrack]! = nil
+    public var resolution: CGSize! = CGSize(width: 0, height: 0)
+    public var duration: CMTime! = .zero
+    public var frameRate: Float! = 0.0
+}
+
 public class DDThumbnailMaker {
     public var avAsset: AVAsset! = nil {
         didSet {
@@ -18,10 +25,31 @@ public class DDThumbnailMaker {
     public var intervalMsec: CMTimeValue! = 1000
     public var intervalFrame: UInt! = 0
     public var targetDuration: CMTimeRange! = nil
+    public var targetFrameRate: Float! = 0.0
     public var thumbnailImageSize: CGSize! = CGSize(width: 192, height: 144)
-    public var videoTracks: [AVAssetTrack]! = nil
-    public var frameRate: Float! = 0.0
-    public var duration: CMTime! = .zero
+
+    @available(*, deprecated, message: "Use videoInfo.videoTracks instead")
+    public var videoTracks: [AVAssetTrack]! {
+        get {
+            return self.videoInfo.videoTracks
+        }
+    }
+
+    @available(*, deprecated, message: "Use videoInfo.frameRate instead")
+    public var frameRate: Float! {
+        get {
+            return self.videoInfo.frameRate
+        }
+    }
+
+    @available(*, deprecated, message: "Use videoInfo.duration instead")
+    public var duration: CMTime! {
+        get {
+            return self.videoInfo.duration
+        }
+    }
+
+    public var videoInfo = VideoInfo()
     
     private var generator: AVAssetImageGenerator? = nil
 
@@ -45,13 +73,13 @@ public class DDThumbnailMaker {
     }
     
     private func initAssetInternal() async {
-        self.videoTracks = try? await self.avAsset.loadTracks(withMediaType: .video)
-        if let videoTracks = self.videoTracks {
-            self.frameRate = videoTracks.count > 0 ? try! await videoTracks.first!.load(.nominalFrameRate) : 0.0
-            self.duration = try? await self.avAsset.load(.duration)
+        self.videoInfo.videoTracks = try? await self.avAsset.loadTracks(withMediaType: .video)
+        if let videoTracks = self.videoInfo.videoTracks {
+            self.videoInfo.frameRate = videoTracks.count > 0 ? try! await videoTracks.first!.load(.nominalFrameRate) : 0.0
+            self.videoInfo.duration = try? await self.avAsset.load(.duration)
             
             let size = try! await videoTracks.first!.load(.naturalSize).applying(videoTracks.first!.load(.preferredTransform))
-            self.thumbnailImageSize = CGSize(width: abs(size.width), height: abs(size.height))
+            self.videoInfo.resolution = CGSize(width: abs(size.width), height: abs(size.height))
         }
     }
     
@@ -94,11 +122,12 @@ public class DDThumbnailMaker {
     
     private func getRequestedAssetTimes() async -> [NSValue] {
         // Get information about avAsset
-        let durationValue = self.duration.value
-        let durationTimescale = self.duration.timescale
-        let durationFlags = self.duration.flags
-        let durationEpoch = self.duration.epoch
-        let numberOfFrames = durationValue * Int64(self.frameRate) / Int64(durationTimescale)
+        let durationValue = self.videoInfo.duration.value
+        let durationTimescale = self.videoInfo.duration.timescale
+        let durationFlags = self.videoInfo.duration.flags
+        let durationEpoch = self.videoInfo.duration.epoch
+        let frameRate = (self.targetFrameRate == 0 ? self.videoInfo.frameRate : self.targetFrameRate)!
+        let numberOfFrames = durationValue * Int64(frameRate) / Int64(durationTimescale)
         
         var times: [NSValue] = []
         for i in 1...numberOfFrames {

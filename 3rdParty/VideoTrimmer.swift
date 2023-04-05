@@ -50,12 +50,19 @@ import AVFoundation
 			setNeedsLayout()
 		}
 	}
+    
+    var thumbnailMaker: DDThumbnailMaker! = nil
 
 	// the asset to use
 	var asset: AVAsset? {
 		didSet {
 			if let asset = asset {
-				range = CMTimeRange(start: .zero, duration: DDThumbnailMaker(asset).duration)
+                if thumbnailMaker == nil {
+                    thumbnailMaker = DDThumbnailMaker(asset)
+                } else {
+                    thumbnailMaker.avAsset = asset
+                }
+                range = CMTimeRange(start: .zero, duration: thumbnailMaker.videoInfo.duration)
 				selectedRange = range
 				lastKnownViewSizeForThumbnailGeneration = .zero
 				setNeedsLayout()
@@ -291,7 +298,7 @@ import AVFoundation
 		guard size.width > 0 && size.height > 0 else {return}
 		guard lastKnownViewSizeForThumbnailGeneration != size || CMTimeRangeEqual(lastKnownThumbnailRange, visibleRange) == false else {return}
 		guard let asset = asset else {return}
-        let thumbnailMaker = DDThumbnailMaker(asset)
+        thumbnailMaker.avAsset = asset
 
 		lastKnownViewSizeForThumbnailGeneration = size
 		lastKnownThumbnailRange = visibleRange
@@ -310,7 +317,7 @@ import AVFoundation
 		var times = Array<NSValue>()
 		// we add some extra thumbnails as padding
 		for index in -3..<numberOfThumbnails + 6 {
-            let time = CMTimeAdd(visibleRange.start, CMTime(seconds: thumbnailDuration * Double(index), preferredTimescale: thumbnailMaker.duration.timescale * 2))
+            let time = CMTimeAdd(visibleRange.start, CMTime(seconds: thumbnailDuration * Double(index), preferredTimescale: thumbnailMaker.videoInfo.duration.timescale * 2))
 			guard CMTimeCompare(time, .zero) != -1 else {continue}
 			times.append(NSValue(time: time))
 
@@ -673,7 +680,7 @@ import AVFoundation
 		}
 	}
 
-	// MARK: - UIView
+    // MARK: - override
 
 	override var intrinsicContentSize: CGSize {
 		return CGSize(width: UIView.noIntrinsicMetric, height: 50)
