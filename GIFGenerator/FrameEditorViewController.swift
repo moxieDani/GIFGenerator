@@ -14,6 +14,7 @@ class FrameEditorViewController: UIViewController {
     private var thumbnailMaker: DDThumbnailMaker! = nil
     private var imageFrames = [UIImage]()
     private let imageView = UIImageView()
+    private var imageViewLabel = UILabel()
     private let playPauseButton = UIButton()
     private let playModeButton = UIButton()
     private let frameRateButton = UIButton()
@@ -97,20 +98,24 @@ class FrameEditorViewController: UIViewController {
     }
     
     @objc func sliderValueChanged(_ sender: UISlider) {
+        self.updateImageViewLabel(string: "\(round((self.imageFrameDelaySlider.value) * 100) / 100) Sec")
         self.updatePauseUI()
     }
     
     @objc func sliderTouchUp(_ sender: UISlider) {
+        self.updateImageViewLabel(string: "\(round((self.imageFrameDelaySlider.value) * 100) / 100) Sec")
         self.updatePlayUI(animate: true)
     }
     
     @objc func sliderValueUp(_ sender: UISlider) {
         self.imageFrameDelaySlider.value += 0.1
+        self.updateImageViewLabel(string: "\(round((self.imageFrameDelaySlider.value) * 100) / 100) Sec")
         self.updatePlayUI(animate:true)
     }
     
     @objc func sliderValueDown(_ sender: UISlider) {
         self.imageFrameDelaySlider.value -= 0.1
+        self.updateImageViewLabel(string: "\(round((self.imageFrameDelaySlider.value) * 100) / 100) Sec")
         self.updatePlayUI(animate:true)
     }
     
@@ -122,6 +127,21 @@ class FrameEditorViewController: UIViewController {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    private func updateImageViewLabel(string:String) {
+        let attributedString = NSMutableAttributedString(string: string)
+        let strokeAttributes: [NSAttributedString.Key: Any] = [
+            .strokeColor: UIColor.darkGray,
+            .strokeWidth: -0.65
+        ]
+        attributedString.addAttributes(strokeAttributes, range: NSRange(location: 0, length: string.count))
+        self.imageViewLabel.attributedText = attributedString
+
+        self.imageViewLabel.alpha = 1.0
+        UIView.animate(withDuration: 1.2, animations: {
+            self.imageViewLabel.alpha = 0.0
+        })
     }
     
     private func getArrangedImageFrames() -> [UIImage] {
@@ -181,15 +201,23 @@ class FrameEditorViewController: UIViewController {
     
     private func updatePlayModeUI() {
         var image = UIImage()
+        var mode = ""
+        
         if self.playModeButton.tag == 0 {
             image = UIImage(systemName: "arrow.right")!
+            mode = "Forward"
         } else if self.playModeButton.tag == 1 {
             image = UIImage(systemName: "arrow.left")!
+            mode = "Backward"
         } else {
             image = UIImage(systemName: "arrow.left.and.right")!
+            mode = "Forward & Backward"
         }
-        
         self.playModeButton.setImage(image, for: .normal)
+        
+        if self.imageView.animationImages != nil {
+            self.updateImageViewLabel(string: mode)
+        }
     }
     
     private func generateGifFrameImages() {
@@ -255,14 +283,6 @@ class FrameEditorViewController: UIViewController {
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.down.fill"), style: .plain, target: self, action: #selector(showOutputGifViewController))
         self.navigationItem.rightBarButtonItem?.tintColor = .red
                
-        self.imageView.frame = CGRect(x: self.view.safeAreaInsets.left,
-                                      y: (self.navigationController?.navigationBar.frame.maxY)!,
-                                      width: self.view.frame.width,
-                                      height: self.view.frame.height * 0.5)
-        self.imageView.backgroundColor = .black
-        self.imageView.contentMode = .scaleAspectFit
-        self.view.addSubview(self.imageView)
-        
         self.playModeButton.frame = CGRect(x: self.view.frame.width/2 - 95,
                                               y: self.view.frame.height - 70,
                                               width: 50,
@@ -282,7 +302,6 @@ class FrameEditorViewController: UIViewController {
                                               width: 50,
                                               height: 50)
         self.playPauseButton.backgroundColor = .systemYellow
-        self.frameRateButton.titleLabel?.numberOfLines = 2
         self.playPauseButton.tintColor = .black
         self.playPauseButton.layer.cornerRadius = self.playPauseButton.frame.width / 2
         self.playPauseButton.layer.borderWidth = 2.0
@@ -296,6 +315,7 @@ class FrameEditorViewController: UIViewController {
                                               y: self.view.frame.height - 70,
                                               width: 50,
                                               height: 50)
+        self.frameRateButton.titleLabel?.numberOfLines = 2
         self.frameRateButton.backgroundColor = .systemYellow
         self.frameRateButton.layer.cornerRadius = 20
         self.frameRateButton.clipsToBounds = true
@@ -341,6 +361,21 @@ class FrameEditorViewController: UIViewController {
         self.imageFrameDelayDownButton.setImage(UIImage(systemName: "tortoise.fill"), for: .normal)
         self.imageFrameDelayDownButton.addTarget(self, action: #selector(sliderValueUp(_:)), for: .touchUpInside)
         self.view.addSubview(self.imageFrameDelayDownButton)
+        
+        self.imageView.frame = CGRect(x: self.view.safeAreaInsets.left,
+                                      y: (self.navigationController?.navigationBar.frame.maxY)!,
+                                      width: self.view.frame.width,
+                                      height: self.imageFrameDelayDownButton.frame.minY - (self.navigationController?.navigationBar.frame.maxY)!)
+        self.imageView.backgroundColor = .darkGray
+        self.imageView.contentMode = .scaleAspectFit
+        self.view.addSubview(self.imageView)
+        
+        self.imageViewLabel = UILabel(frame: self.imageView.frame)
+        self.imageViewLabel.font = UIFont.systemFont(ofSize: 35)
+        self.imageViewLabel.textColor = .systemYellow
+        self.imageViewLabel.textAlignment = .center
+        self.imageViewLabel.numberOfLines = 2
+        self.view.addSubview(self.imageViewLabel)
     }
     
 
