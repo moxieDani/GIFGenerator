@@ -48,8 +48,9 @@ class FrameEditorViewController: UIViewController {
         let gifFilePath: URL! = documentsDirectoryURL.appendingPathComponent("test.gif")
         
         // Generate GIF file
+        let frameDelayTime = self.imageFrameDelaySlider.value / Float(self.imageFrames.count)
         self.generateGif(filePath: gifFilePath)
-        let rootVC = OutputGifViewController(gifFilePath!)
+        let rootVC = OutputGifViewController(gifFilePath!, frameDelayTime)
         self.navigationController?.pushViewController(rootVC, animated: true)
     }
     
@@ -245,8 +246,9 @@ class FrameEditorViewController: UIViewController {
     }
     
     private func generateGif(filePath: URL) {
+        let frameDelayTime = self.imageFrameDelaySlider.value / Float(self.imageFrames.count)
         let fileProperties: CFDictionary = [kCGImagePropertyGIFDictionary as String: [kCGImagePropertyGIFLoopCount as String: 0]]  as CFDictionary
-        let frameProperties: CFDictionary = [kCGImagePropertyGIFDictionary as String: [(kCGImagePropertyGIFDelayTime as String): 1.0]] as CFDictionary
+        let frameProperties: CFDictionary = [kCGImagePropertyGIFDictionary as String: [(kCGImagePropertyGIFDelayTime as String): frameDelayTime]] as CFDictionary
         
         do {
             if FileManager.default.fileExists(atPath: filePath.path) {
@@ -256,10 +258,11 @@ class FrameEditorViewController: UIViewController {
             print(error.localizedDescription)
         }
         
+        let images = self.getArrangedImageFrames()
         if let url = filePath as CFURL? {
-            if let destination = CGImageDestinationCreateWithURL(url, UTType.gif.identifier as CFString, self.imageFrames.count, nil) {
+            if let destination = CGImageDestinationCreateWithURL(url, UTType.gif.identifier as CFString, images.count, nil) {
                 CGImageDestinationSetProperties(destination, fileProperties)
-                for image in self.imageFrames {
+                for image in images {
                     autoreleasepool {
                         if let cgImage = image.cgImage {
                             CGImageDestinationAddImage(destination, cgImage, frameProperties)
