@@ -43,6 +43,7 @@ class FrameEditorViewController: UIViewController {
         }
     }
 
+    // MARK: - obj function
     @objc private func showOutputGifViewController() {
         let documentsDirectoryURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         let gifFilePath: URL! = documentsDirectoryURL.appendingPathComponent("test.gif")
@@ -120,14 +121,115 @@ class FrameEditorViewController: UIViewController {
         self.updatePlayUI(animate:true)
     }
     
-    init(_ thumbnailMaker: DDThumbnailMaker) {
-        super.init(nibName: nil, bundle: nil)
-        self.thumbnailMaker = thumbnailMaker
-        self.generateGifFrameImages()
+    // MARK: - private func
+    private func showPlayModeButton() {
+        self.playModeButton.frame = CGRect(x: self.view.frame.width/2 - 95,
+                                           y: self.view.frame.height - 70,
+                                           width: 50,
+                                           height: 50)
+        self.playModeButton.backgroundColor = .systemYellow
+        self.playModeButton.tintColor = .black
+        self.playModeButton.layer.cornerRadius = self.playModeButton.frame.width / 2
+        self.playModeButton.layer.borderWidth = 2.0
+        self.playModeButton.layer.borderColor = UIColor.darkGray.cgColor
+        self.playModeButton.clipsToBounds = true
+        self.playModeButton.setImage(UIImage(systemName: "arrow.right"), for: .normal)
+        self.playModeButton.addTarget(self, action: #selector(pressPlayModeButton), for: .touchUpInside)
+        self.view.addSubview(self.playModeButton)
     }
     
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    private func showPlayPauseButton() {
+        self.playPauseButton.frame = CGRect(x: self.view.frame.width/2 - 25,
+                                            y: self.view.frame.height - 70,
+                                            width: 50,
+                                            height: 50)
+        self.playPauseButton.backgroundColor = .systemYellow
+        self.playPauseButton.tintColor = .black
+        self.playPauseButton.layer.cornerRadius = self.playPauseButton.frame.width / 2
+        self.playPauseButton.layer.borderWidth = 2.0
+        self.playPauseButton.layer.borderColor = UIColor.darkGray.cgColor
+        self.playPauseButton.clipsToBounds = true
+        self.playPauseButton.setImage(UIImage(systemName: "pause.fill"), for: .normal)
+        self.playPauseButton.addTarget(self, action: #selector(pressPlayPauseButton), for: .touchUpInside)
+        self.view.addSubview(self.playPauseButton)
+    }
+    
+    private func showFrameRateButton() {
+        self.frameRateButton.frame = CGRect(x: self.view.frame.width/2 + 45,
+                                            y: self.view.frame.height - 70,
+                                            width: 50,
+                                            height: 50)
+        self.frameRateButton.titleLabel?.numberOfLines = 2
+        self.frameRateButton.backgroundColor = .systemYellow
+        self.frameRateButton.layer.cornerRadius = 20
+        self.frameRateButton.clipsToBounds = true
+        self.frameRateButton.titleLabel?.lineBreakMode = .byTruncatingTail
+        self.frameRateButton.titleLabel?.textAlignment = .center
+        self.frameRateButton.titleLabel?.font = UIFont.systemFont(ofSize: 20)
+        self.frameRateButton.titleLabel?.adjustsFontSizeToFitWidth = true
+        self.frameRateButton.titleLabel?.minimumScaleFactor = 0.5 // 글꼴 축소 최소 비율
+        
+        self.frameRateButton.layer.cornerRadius = self.frameRateButton.frame.width / 2
+        self.frameRateButton.layer.borderWidth = 2.0
+        self.frameRateButton.layer.borderColor = UIColor.darkGray.cgColor
+        self.frameRateButton.addTarget(self, action: #selector(showFrameRateDialogue), for: .touchUpInside)
+        self.view.addSubview(self.frameRateButton)
+    }
+    
+    private func showFrameDelaySlider() {
+        self.imageFrameDelaySlider.frame = CGRect(x: 50, y: self.frameRateButton.frame.minY - 50, width: self.view.frame.width - 100, height: 30)
+        self.imageFrameDelaySlider.minimumValue = 0.30
+        self.imageFrameDelaySlider.maximumValue = 10.00
+        self.imageFrameDelaySlider.value = self.imageFrameDelaySlider.minimumValue
+        self.imageFrameDelaySlider.addTarget(self, action: #selector(sliderValueChanged(_:)), for: .valueChanged)
+        self.imageFrameDelaySlider.addTarget(self, action: #selector(sliderTouchUp(_:)), for: .touchUpInside)
+        self.imageFrameDelaySlider.minimumTrackTintColor = .darkGray
+        self.imageFrameDelaySlider.maximumTrackTintColor = .darkGray
+        self.imageFrameDelaySlider.thumbTintColor = .systemYellow
+        self.view.addSubview(self.imageFrameDelaySlider)
+    }
+    
+    private func showImageFrameDelayUpButton() {
+        self.imageFrameDelayUpButton.frame = CGRect(x: self.imageFrameDelaySlider.frame.minX - 50,
+                                                    y: self.imageFrameDelaySlider.frame.minY - 10,
+                                                    width: 50,
+                                                    height: 50)
+        self.imageFrameDelayUpButton.backgroundColor = .systemGray
+        self.imageFrameDelayUpButton.tintColor = .systemYellow
+        self.imageFrameDelayUpButton.setImage(UIImage(systemName: "hare.fill"), for: .normal)
+        self.imageFrameDelayUpButton.addTarget(self, action: #selector(sliderValueDown(_:)), for: .touchUpInside)
+        self.view.addSubview(self.imageFrameDelayUpButton)
+    }
+    
+    private func showImageFrameDelayDownButton() {
+        self.imageFrameDelayDownButton.frame = CGRect(x: self.imageFrameDelaySlider.frame.maxX,
+                                                      y: self.imageFrameDelaySlider.frame.minY - 10,
+                                                      width: 50,
+                                                      height: 50)
+        self.imageFrameDelayDownButton.backgroundColor = .systemGray
+        self.imageFrameDelayDownButton.tintColor = .systemYellow
+        self.imageFrameDelayDownButton.setImage(UIImage(systemName: "tortoise.fill"), for: .normal)
+        self.imageFrameDelayDownButton.addTarget(self, action: #selector(sliderValueUp(_:)), for: .touchUpInside)
+        self.view.addSubview(self.imageFrameDelayDownButton)
+    }
+    
+    private func showImageView() {
+        self.imageView.frame = CGRect(x: self.view.safeAreaInsets.left,
+                                      y: (self.navigationController?.navigationBar.frame.maxY)!,
+                                      width: self.view.frame.width,
+                                      height: self.imageFrameDelayDownButton.frame.minY - (self.navigationController?.navigationBar.frame.maxY)!)
+        self.imageView.backgroundColor = .darkGray
+        self.imageView.contentMode = .scaleAspectFit
+        self.view.addSubview(self.imageView)
+    }
+    
+    private func showImageViewLabel() {
+        self.imageViewLabel = UILabel(frame: self.imageView.frame)
+        self.imageViewLabel.font = UIFont.systemFont(ofSize: 35)
+        self.imageViewLabel.textColor = .systemYellow
+        self.imageViewLabel.textAlignment = .center
+        self.imageViewLabel.numberOfLines = 2
+        self.view.addSubview(self.imageViewLabel)
     }
     
     private func updateImageViewLabel(string:String) {
@@ -276,6 +378,17 @@ class FrameEditorViewController: UIViewController {
         }
     }
     
+    // MARK: - override func
+    init(_ thumbnailMaker: DDThumbnailMaker) {
+        super.init(nibName: nil, bundle: nil)
+        self.thumbnailMaker = thumbnailMaker
+        self.generateGifFrameImages()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -286,104 +399,18 @@ class FrameEditorViewController: UIViewController {
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.down.fill"), style: .plain, target: self, action: #selector(showOutputGifViewController))
         self.navigationItem.rightBarButtonItem?.tintColor = .red
                
-        self.playModeButton.frame = CGRect(x: self.view.frame.width/2 - 95,
-                                              y: self.view.frame.height - 70,
-                                              width: 50,
-                                              height: 50)
-        self.playModeButton.backgroundColor = .systemYellow
-        self.playModeButton.tintColor = .black
-        self.playModeButton.layer.cornerRadius = self.playModeButton.frame.width / 2
-        self.playModeButton.layer.borderWidth = 2.0
-        self.playModeButton.layer.borderColor = UIColor.darkGray.cgColor
-        self.playModeButton.clipsToBounds = true
-        self.playModeButton.setImage(UIImage(systemName: "arrow.right"), for: .normal)
-        self.playModeButton.addTarget(self, action: #selector(pressPlayModeButton), for: .touchUpInside)
-        self.view.addSubview(self.playModeButton)
-        
-        self.playPauseButton.frame = CGRect(x: self.view.frame.width/2 - 25,
-                                              y: self.view.frame.height - 70,
-                                              width: 50,
-                                              height: 50)
-        self.playPauseButton.backgroundColor = .systemYellow
-        self.playPauseButton.tintColor = .black
-        self.playPauseButton.layer.cornerRadius = self.playPauseButton.frame.width / 2
-        self.playPauseButton.layer.borderWidth = 2.0
-        self.playPauseButton.layer.borderColor = UIColor.darkGray.cgColor
-        self.playPauseButton.clipsToBounds = true
-        self.playPauseButton.setImage(UIImage(systemName: "pause.fill"), for: .normal)
-        self.playPauseButton.addTarget(self, action: #selector(pressPlayPauseButton), for: .touchUpInside)
-        self.view.addSubview(self.playPauseButton)
-        
-        self.frameRateButton.frame = CGRect(x: self.view.frame.width/2 + 45,
-                                              y: self.view.frame.height - 70,
-                                              width: 50,
-                                              height: 50)
-        self.frameRateButton.titleLabel?.numberOfLines = 2
-        self.frameRateButton.backgroundColor = .systemYellow
-        self.frameRateButton.layer.cornerRadius = 20
-        self.frameRateButton.clipsToBounds = true
-        self.frameRateButton.titleLabel?.lineBreakMode = .byTruncatingTail
-        self.frameRateButton.titleLabel?.textAlignment = .center
-        self.frameRateButton.titleLabel?.font = UIFont.systemFont(ofSize: 20)
-        self.frameRateButton.titleLabel?.adjustsFontSizeToFitWidth = true
-        self.frameRateButton.titleLabel?.minimumScaleFactor = 0.5 // 글꼴 축소 최소 비율
-        
-        self.frameRateButton.layer.cornerRadius = self.frameRateButton.frame.width / 2
-        self.frameRateButton.layer.borderWidth = 2.0
-        self.frameRateButton.layer.borderColor = UIColor.darkGray.cgColor
-        self.frameRateButton.addTarget(self, action: #selector(showFrameRateDialogue), for: .touchUpInside)
-        self.view.addSubview(self.frameRateButton)
-        
-        self.imageFrameDelaySlider.frame = CGRect(x: 50, y: self.frameRateButton.frame.minY - 50, width: self.view.frame.width - 100, height: 30)
-        self.imageFrameDelaySlider.minimumValue = 0.30
-        self.imageFrameDelaySlider.maximumValue = 10.00
-        self.imageFrameDelaySlider.value = self.imageFrameDelaySlider.minimumValue
-        self.imageFrameDelaySlider.addTarget(self, action: #selector(sliderValueChanged(_:)), for: .valueChanged)
-        self.imageFrameDelaySlider.addTarget(self, action: #selector(sliderTouchUp(_:)), for: .touchUpInside)
-        self.imageFrameDelaySlider.minimumTrackTintColor = .darkGray
-        self.imageFrameDelaySlider.maximumTrackTintColor = .darkGray
-        self.imageFrameDelaySlider.thumbTintColor = .systemYellow
-        self.view.addSubview(self.imageFrameDelaySlider)
-        
-        self.imageFrameDelayUpButton.frame = CGRect(x: self.imageFrameDelaySlider.frame.minX - 50,
-                                                    y: self.imageFrameDelaySlider.frame.minY - 10,
-                                                    width: 50,
-                                                    height: 50)
-        self.imageFrameDelayUpButton.backgroundColor = .systemGray
-        self.imageFrameDelayUpButton.tintColor = .systemYellow
-        self.imageFrameDelayUpButton.setImage(UIImage(systemName: "hare.fill"), for: .normal)
-        self.imageFrameDelayUpButton.addTarget(self, action: #selector(sliderValueDown(_:)), for: .touchUpInside)
-        self.view.addSubview(self.imageFrameDelayUpButton)
-        
-        self.imageFrameDelayDownButton.frame = CGRect(x: self.imageFrameDelaySlider.frame.maxX,
-                                                    y: self.imageFrameDelaySlider.frame.minY - 10,
-                                                    width: 50,
-                                                    height: 50)
-        self.imageFrameDelayDownButton.backgroundColor = .systemGray
-        self.imageFrameDelayDownButton.tintColor = .systemYellow
-        self.imageFrameDelayDownButton.setImage(UIImage(systemName: "tortoise.fill"), for: .normal)
-        self.imageFrameDelayDownButton.addTarget(self, action: #selector(sliderValueUp(_:)), for: .touchUpInside)
-        self.view.addSubview(self.imageFrameDelayDownButton)
-        
-        self.imageView.frame = CGRect(x: self.view.safeAreaInsets.left,
-                                      y: (self.navigationController?.navigationBar.frame.maxY)!,
-                                      width: self.view.frame.width,
-                                      height: self.imageFrameDelayDownButton.frame.minY - (self.navigationController?.navigationBar.frame.maxY)!)
-        self.imageView.backgroundColor = .darkGray
-        self.imageView.contentMode = .scaleAspectFit
-        self.view.addSubview(self.imageView)
-        
-        self.imageViewLabel = UILabel(frame: self.imageView.frame)
-        self.imageViewLabel.font = UIFont.systemFont(ofSize: 35)
-        self.imageViewLabel.textColor = .systemYellow
-        self.imageViewLabel.textAlignment = .center
-        self.imageViewLabel.numberOfLines = 2
-        self.view.addSubview(self.imageViewLabel)
+        self.showPlayModeButton()
+        self.showPlayPauseButton()
+        self.showFrameRateButton()
+        self.showFrameDelaySlider()
+        self.showImageFrameDelayUpButton()
+        self.showImageFrameDelayDownButton()
+        self.showImageView()
+        self.showImageViewLabel()
     }
     
 
     /*
-    // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
