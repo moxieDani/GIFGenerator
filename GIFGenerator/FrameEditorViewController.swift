@@ -43,6 +43,7 @@ class FrameEditorViewController: UIViewController {
         }
     }
 
+    // MARK: - obj function
     @objc private func showOutputGifViewController() {
         let documentsDirectoryURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         let gifFilePath: URL! = documentsDirectoryURL.appendingPathComponent("test.gif")
@@ -120,16 +121,7 @@ class FrameEditorViewController: UIViewController {
         self.updatePlayUI(animate:true)
     }
     
-    init(_ thumbnailMaker: DDThumbnailMaker) {
-        super.init(nibName: nil, bundle: nil)
-        self.thumbnailMaker = thumbnailMaker
-        self.generateGifFrameImages()
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
+    // MARK: - private func
     private func updateImageViewLabel(string:String) {
         let attributedString = NSMutableAttributedString(string: string)
         let strokeAttributes: [NSAttributedString.Key: Any] = [
@@ -276,6 +268,17 @@ class FrameEditorViewController: UIViewController {
         }
     }
     
+    // MARK: - override func
+    init(_ thumbnailMaker: DDThumbnailMaker) {
+        super.init(nibName: nil, bundle: nil)
+        self.thumbnailMaker = thumbnailMaker
+        self.generateGifFrameImages()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -383,7 +386,6 @@ class FrameEditorViewController: UIViewController {
     
 
     /*
-    // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
